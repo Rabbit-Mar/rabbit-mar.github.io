@@ -146,7 +146,7 @@
         
         <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
         
-        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Monkey" data-toggle=tooltip data-placement=top><i class="icon icon-monkey"></i></a></li>
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
         
         <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
         
@@ -335,7 +335,7 @@
         
         <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
         
-        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Monkey" data-toggle=tooltip data-placement=top><i class="icon icon-monkey"></i></a></li>
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
         
         <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
         
@@ -387,24 +387,21 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 
    
     
-<script src="//cdn.jsdelivr.net/npm/gitment@0.0.3/dist/gitment.browser.min.js"></script>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
-var gitment = new Gitment({
-  // id默认为当前页面url，如果url后带参数或锚点，gitment要重新初始化
-  // https://github.com/imsun/gitment/issues/55
-  // 解决方案：id:window.location.pathname,或者将id设置为当前页面标题
-  id: 'test1', 
-  owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
-  repo: 'rabbit-mar.github.io',
-  oauth: {
-    client_id: 'a05c4d867ec26c0a59d2',
-    client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
-    redirect_uri: 'https://rabbit-mar.github.io'
-  }
-})
-gitment.render('comments')
+  var gitment = new Gitment({
+    id: 'test1',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+      redirect_uri: 'https://rabbit-mar.github.io'
+    }
+  })
+  gitment.render('comments')
 </script>
-
 
 
 
