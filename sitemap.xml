@@ -2,7 +2,35 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://rabbit-mar.github.io/2021/02/18/hello-world/</loc>
+    <loc>https://rabbit-mar.github.io/2021/02/18/test1/</loc>
+    
+    <lastmod>2021-02-18</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://rabbit-mar.github.io/tags/index.html</loc>
+    
+    <lastmod>2021-02-18</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://rabbit-mar.github.io/about/index.html</loc>
+    
+    <lastmod>2021-02-18</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://rabbit-mar.github.io/404.html</loc>
+    
+    <lastmod>2021-02-18</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://rabbit-mar.github.io/2021/02/18/test/</loc>
     
     <lastmod>2021-02-18</lastmod>
     
@@ -16,6 +44,13 @@
     <priority>1.0</priority>
   </url>
 
+  
+  <url>
+    <loc>https://rabbit-mar.github.io/tags/test/</loc>
+    <lastmod>2021-02-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
   
 
   
