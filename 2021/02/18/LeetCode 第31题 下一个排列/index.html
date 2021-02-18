@@ -16,22 +16,20 @@
   
   
   <title>LeetCode 第31题:下一个排列 | Marveal Rabbit - Coder&#39;s Blog</title>
-  <meta name="description" content="31. 下一个排列实现获取下一个排列的函数，算法需要将给定数字序列重新排列成字典序中下一个更大的排列。如果不存在下一个更大的排列，则将数字重新排列成最小的排列（即升序排列）。必须原地修改，只允许使用额外常数空间。以下是一些例子，输入位于左侧列，其相应输出位于右侧列。1,2,3 → 1,3,23,2,1 → 1,2,31,1,5 → 1,5,1    题目来源：力扣（LeetCode）链接：http">
+  <meta name="description" content="实现获取下一个排列的函数，算法需要将给定数字序列重新排列成字典序中下一个更大的排列。  如果不存在下一个更大的排列，则将数字重新排列成最小的排列（即升序排列）。  必须原地修改，只允许使用额外常数空间。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="LeetCode 第31题:下一个排列">
 <meta property="og:url" content="https://rabbit-mar.github.io/2021/02/18/LeetCode%20%E7%AC%AC31%E9%A2%98%20%E4%B8%8B%E4%B8%80%E4%B8%AA%E6%8E%92%E5%88%97/index.html">
 <meta property="og:site_name" content="Marveal Rabbit">
-<meta property="og:description" content="31. 下一个排列实现获取下一个排列的函数，算法需要将给定数字序列重新排列成字典序中下一个更大的排列。如果不存在下一个更大的排列，则将数字重新排列成最小的排列（即升序排列）。必须原地修改，只允许使用额外常数空间。以下是一些例子，输入位于左侧列，其相应输出位于右侧列。1,2,3 → 1,3,23,2,1 → 1,2,31,1,5 → 1,5,1    题目来源：力扣（LeetCode）链接：http">
+<meta property="og:description" content="实现获取下一个排列的函数，算法需要将给定数字序列重新排列成字典序中下一个更大的排列。  如果不存在下一个更大的排列，则将数字重新排列成最小的排列（即升序排列）。  必须原地修改，只允许使用额外常数空间。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://img.marvr.top/upload/images/2020/05/16/6113998b-98d0-417e-8fdf-8a1cce3c5197.jpg">
-<meta property="og:image" content="http://img.marvr.top/upload/images/2020/05/16/adf638b6-4ccc-4bb2-9b31-022d11c6e745.jpg">
-<meta property="og:image" content="http://img.marvr.top/upload/images/2020/05/16/1b2a0587-bf22-4a8a-ab8b-a79e288977fd.jpg">
+<meta property="og:image" content="https://picsum.photos/1080/400">
 <meta property="article:published_time" content="2021-02-18T11:51:01.000Z">
-<meta property="article:modified_time" content="2021-02-18T11:53:05.241Z">
+<meta property="article:modified_time" content="2021-02-18T13:35:31.559Z">
 <meta property="article:author" content="Marveal Rabbit">
 <meta property="article:tag" content="LeetCode">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://img.marvr.top/upload/images/2020/05/16/6113998b-98d0-417e-8fdf-8a1cce3c5197.jpg">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
   <!-- Canonical links -->
   <link rel="canonical" href="https://rabbit-mar.github.io/2021/02/18/LeetCode%20%E7%AC%AC31%E9%A2%98%20%E4%B8%8B%E4%B8%80%E4%B8%AA%E6%8E%92%E5%88%97/index.html">
   
@@ -240,11 +238,22 @@
   
 <main class="main" role="main">
   <div class="content">
-  <article id="post-LeetCode 第31题 下一个排列" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+  <article id="post-LeetCode 第31题 下一个排列" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
     
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklaws11v0001z7020bjpf8z3 noopener">
+        <img src="https://picsum.photos/1080/400" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
     <div class="article-header">
       
-        
+      
   
     <h1 class="article-title" itemprop="name">
       LeetCode 第31题:下一个排列
@@ -256,7 +265,7 @@
         <span class="article-date">
     <i class="icon icon-calendar-check"></i>
 	<a href="/2021/02/18/LeetCode%20%E7%AC%AC31%E9%A2%98%20%E4%B8%8B%E4%B8%80%E4%B8%AA%E6%8E%92%E5%88%97/" class="article-date">
-	  <time datetime="2021-02-18T11:51:01.000Z" itemprop="datePublished">2021-02-18</time>
+	  <time datetime="2021-02-18T11:51:01.000Z" itemprop="datePublished">2021年02月18日19时</time>
 	</a>
 </span>
         
@@ -274,13 +283,25 @@
 		</span>
 	</span>
 
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021/02/18/LeetCode%20%E7%AC%AC31%E9%A2%98%20%E4%B8%8B%E4%B8%80%E4%B8%AA%E6%8E%92%E5%88%97/#comments" class="article-comment-link">评论</a></span>
         
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	520(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	2(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021/02/18/LeetCode%20%E7%AC%AC31%E9%A2%98%20%E4%B8%8B%E4%B8%80%E4%B8%AA%E6%8E%92%E5%88%97/#comments"
+            class="article-comment-link">评论</a></span>
       </div>
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <h2 id="31-下一个排列"><a href="#31-下一个排列" class="headerlink" title="31. 下一个排列"></a>31. 下一个排列</h2><p>实现获取下一个排列的函数，算法需要将给定数字序列重新排列成字典序中下一个更大的排列。<br>如果不存在下一个更大的排列，则将数字重新排列成最小的排列（即升序排列）。<br>必须原地修改，只允许使用额外常数空间。<br>以下是一些例子，输入位于左侧列，其相应输出位于右侧列。<br>1,2,3 → 1,3,2<br>3,2,1 → 1,2,3<br>1,1,5 → 1,5,1  </p>
+      <h2 id="31-下一个排列"><a href="#31-下一个排列" class="headerlink" title="31. 下一个排列"></a>31. 下一个排列</h2><p>实现获取下一个排列的函数，算法需要将给定数字序列重新排列成字典序中下一个更大的排列。<br>如果不存在下一个更大的排列，则将数字重新排列成最小的排列（即升序排列）。<br>必须原地修改，只允许使用额外常数空间。<br>以下是一些例子，输入位于左侧列，其相应输出位于右侧列。<br>1,2,3 → 1,3,2<br>3,2,1 → 1,2,3<br>1,1,5 → 1,5,1  </p>
 <blockquote>
 <p>题目来源：力扣（LeetCode）<br>链接：<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/next-permutation">https://leetcode-cn.com/problems/next-permutation</a><br>著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。  </p>
 </blockquote>
@@ -341,16 +362,16 @@
 <td align="center">4</td>
 </tr>
 </tbody></table>
-<p>可以找打规律<strong>从右向左</strong>遍历，找到一个拐点的时候，如上例所示，即 2、4、3、2<br>2在2、3、4这样的逆序排列中，突然递减，此时可以找到一个更大的排列<br><img src="http://img.marvr.top/upload/images/2020/05/16/6113998b-98d0-417e-8fdf-8a1cce3c5197.jpg"></p>
+<p>可以找打规律<strong>从右向左</strong>遍历，找到一个拐点的时候，如上例所示，即 2、4、3、2<br>2在2、3、4这样的逆序排列中，突然递减，此时可以找到一个更大的排列<br><img src="/images/2020/05/16/6113998b-98d0-417e-8fdf-8a1cce3c5197.jpg"></p>
 <blockquote>
 <p>如图所示，只需要找到2之后的节点，并且离2最接近的节点进行交换  </p>
 </blockquote>
-<p><img src="http://img.marvr.top/upload/images/2020/05/16/adf638b6-4ccc-4bb2-9b31-022d11c6e745.jpg"></p>
+<p><img src="/images/2020/05/16/adf638b6-4ccc-4bb2-9b31-022d11c6e745.jpg"></p>
 <blockquote>
 <p>然后将3之后的节点进行排序，就拿到了1、3、2、2、4这个顺序</p>
 </blockquote>
-<p><img src="http://img.marvr.top/upload/images/2020/05/16/1b2a0587-bf22-4a8a-ab8b-a79e288977fd.jpg"></p>
-<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">nextPermutation</span><span class="params">(<span class="keyword">int</span>[] nums)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> len = nums.length;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = len - <span class="number">1</span>; i &gt; <span class="number">0</span>; i--) &#123;</span><br><span class="line">		<span class="keyword">if</span> (nums[i-<span class="number">1</span>] &lt; nums[i]) &#123;</span><br><span class="line">		    <span class="keyword">int</span> aim = getClosestNum(nums, i-<span class="number">1</span>);</span><br><span class="line">			swap(nums, i-<span class="number">1</span>, aim);</span><br><span class="line">			Arrays.sort(nums, i, len);</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 降序排列</span></span><br><span class="line">	Arrays.sort(nums);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 交换</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">swap</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> source, <span class="keyword">int</span> target)</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> tmp = nums[source];</span><br><span class="line">	nums[source] = nums[target];</span><br><span class="line">	nums[target] = tmp;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getClosestNum</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> idx)</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> len = nums.length;</span><br><span class="line">	<span class="keyword">int</span> seek = idx + <span class="number">2</span>; <span class="comment">// 游标i</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> aim = idx+<span class="number">1</span>; <span class="comment">// 初始化最接近的下标</span></span><br><span class="line">	<span class="keyword">int</span> gap = nums[aim] - nums[idx];<span class="comment">//差值</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 开始遍历后续节点，找到最接近拐点前的那个值</span></span><br><span class="line">	<span class="keyword">while</span> (seek &lt;= len-<span class="number">1</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> (nums[seek] &gt; nums[idx] &amp;&amp; (nums[seek] - nums[idx]) &lt; gap) &#123;</span><br><span class="line">			aim = seek;</span><br><span class="line">			gap = nums[seek] - nums[idx];</span><br><span class="line">		&#125;</span><br><span class="line">		seek++;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> aim;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/images/2020/05/16/1b2a0587-bf22-4a8a-ab8b-a79e288977fd.jpg"></p>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">nextPermutation</span><span class="params">(<span class="keyword">int</span>[] nums)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> len = nums.length;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = len - <span class="number">1</span>; i &gt; <span class="number">0</span>; i--) &#123;</span><br><span class="line">		<span class="keyword">if</span> (nums[i-<span class="number">1</span>] &lt; nums[i]) &#123;</span><br><span class="line">		    <span class="keyword">int</span> aim = getClosestNum(nums, i-<span class="number">1</span>);</span><br><span class="line">			swap(nums, i-<span class="number">1</span>, aim);</span><br><span class="line">			Arrays.sort(nums, i, len);</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 降序排列</span></span><br><span class="line">	Arrays.sort(nums);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 交换</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">swap</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> source, <span class="keyword">int</span> target)</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> tmp = nums[source];</span><br><span class="line">	nums[source] = nums[target];</span><br><span class="line">	nums[target] = tmp;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getClosestNum</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> idx)</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> len = nums.length;</span><br><span class="line">	<span class="keyword">int</span> seek = idx + <span class="number">2</span>; <span class="comment">// 游标i</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> aim = idx+<span class="number">1</span>; <span class="comment">// 初始化最接近的下标</span></span><br><span class="line">	<span class="keyword">int</span> gap = nums[aim] - nums[idx];<span class="comment">//差值</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 开始遍历后续节点，找到最接近拐点前的那个值</span></span><br><span class="line">	<span class="keyword">while</span> (seek &lt;= len-<span class="number">1</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> (nums[seek] &gt; nums[idx] &amp;&amp; (nums[seek] - nums[idx]) &lt; gap) &#123;</span><br><span class="line">			aim = seek;</span><br><span class="line">			gap = nums[seek] - nums[idx];</span><br><span class="line">		&#125;</span><br><span class="line">		seek++;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> aim;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
       
     </div>
     <div class="article-footer">
@@ -389,7 +410,7 @@
     </div>
   </article>
   
-    
+  
   <section id="comments">
   	
     
