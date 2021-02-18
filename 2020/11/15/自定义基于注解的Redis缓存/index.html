@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>自定义基于注解的Redis缓存 | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="笔者由于使用Springboot自带的Cacheable注解的key值不方便自定义，于是自定义了一个RedisCache的注解">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自定义基于注解的Redis缓存">
+<meta property="og:url" content="https://rabbit-mar.github.io/2020/11/15/%E8%87%AA%E5%AE%9A%E4%B9%89%E5%9F%BA%E4%BA%8E%E6%B3%A8%E8%A7%A3%E7%9A%84Redis%E7%BC%93%E5%AD%98/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="笔者由于使用Springboot自带的Cacheable注解的key值不方便自定义，于是自定义了一个RedisCache的注解">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picsum.photos/1080/400">
+<meta property="article:published_time" content="2020-11-15T07:02:37.000Z">
+<meta property="article:modified_time" content="2021-02-18T14:54:08.054Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="SpringBoot">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2020/11/15/%E8%87%AA%E5%AE%9A%E4%B9%89%E5%9F%BA%E4%BA%8E%E6%B3%A8%E8%A7%A3%E7%9A%84Redis%E7%BC%93%E5%AD%98/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">34</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/"
+              class="title">分库分表之sharding-jdbc&amp;mycat</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020-12-23</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%94%EF%BC%89%E2%80%94%E2%80%94-%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84/"
+              class="title">Redis学习之路（五）—— 集群架构</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-11T00:02:55.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">Kafka 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:56:18.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%B8%80%EF%BC%89/"
+              class="title">Kafka 学习之路（一）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:54:03.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">RabbitMQ 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-05T05:20:31.000Z" itemprop="datePublished">2020-12-05</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-自定义基于注解的Redis缓存" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklb01am4003htv02fzvwg7ht noopener">
+        <img src="https://picsum.photos/1080/400" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    <div class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      自定义基于注解的Redis缓存
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/11/15/%E8%87%AA%E5%AE%9A%E4%B9%89%E5%9F%BA%E4%BA%8E%E6%B3%A8%E8%A7%A3%E7%9A%84Redis%E7%BC%93%E5%AD%98/" class="article-date">
+	  <time datetime="2020-11-15T07:02:37.000Z" itemprop="datePublished">2020年11月15日15时</time>
+	</a>
+</span>
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Java/" rel="tag">Java</a>, <a class="article-tag-link-link" href="/tags/Redis/" rel="tag">Redis</a>, <a class="article-tag-link-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	2k(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	10(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/11/15/%E8%87%AA%E5%AE%9A%E4%B9%89%E5%9F%BA%E4%BA%8E%E6%B3%A8%E8%A7%A3%E7%9A%84Redis%E7%BC%93%E5%AD%98/#comments"
+            class="article-comment-link">评论</a></span>
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+      <h1 id="自定义基于注解的Redis缓存"><a href="#自定义基于注解的Redis缓存" class="headerlink" title="自定义基于注解的Redis缓存"></a>自定义基于注解的Redis缓存</h1><p>笔者由于使用Springboot自带的Cacheable注解的key值不方便自定义，于是自定义了一个RedisCache的注解，作用于方法上，用于将结果保存在多个key值上，并且可通过#{参数名}的方式进行注入参数值，同时可设置ttl以及是否缓存null值等操作</p>
+<h2 id="采用kryo作为redis的值序列化"><a href="#采用kryo作为redis的值序列化" class="headerlink" title="采用kryo作为redis的值序列化"></a>采用kryo作为redis的值序列化</h2><h3 id="导入依赖"><a href="#导入依赖" class="headerlink" title="导入依赖"></a>导入依赖</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--  kryo  --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.esotericsoftware<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>kryo<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;kryo.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="Redis配置类"><a href="#Redis配置类" class="headerlink" title="Redis配置类"></a>Redis配置类</h3><p>笔者配置的Redis配置类，采用Lettuce连接池的单机配置，下方采用KryoRedisSerializer类作为值序列化工具</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.redis.host&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String host;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.redis.port&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> Integer port;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.redis.password:&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String password;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value(&quot;$&#123;spring.redis.database&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> Integer database;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> RedisTemplate&lt;String, Object&gt; <span class="title">redisTemplate</span><span class="params">(RedisConnectionFactory factory)</span> </span>&#123;</span><br><span class="line">        RedisTemplate&lt;String, Object&gt; redisTemplate = <span class="keyword">new</span> RedisTemplate&lt;&gt;();</span><br><span class="line">        redisTemplate.setConnectionFactory(factory);</span><br><span class="line">        redisTemplate.setKeySerializer(<span class="keyword">new</span> Jackson2JsonRedisSerializer&lt;&gt;(String.class));</span><br><span class="line">        redisTemplate.setValueSerializer(<span class="keyword">new</span> KryoRedisSerializer&lt;&gt;(Object.class));</span><br><span class="line">        redisTemplate.afterPropertiesSet();</span><br><span class="line">        <span class="keyword">return</span> redisTemplate;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> RedisConnectionFactory <span class="title">factory</span><span class="params">(RedisStandaloneConfiguration standaloneConfig)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> LettuceConnectionFactory(standaloneConfig);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> RedisStandaloneConfiguration <span class="title">standaloneConfig</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        RedisStandaloneConfiguration standaloneConfiguration = <span class="keyword">new</span> RedisStandaloneConfiguration();</span><br><span class="line">        standaloneConfiguration.setHostName(host);</span><br><span class="line">        standaloneConfiguration.setPort(port);</span><br><span class="line">        standaloneConfiguration.setPassword(password);</span><br><span class="line">        standaloneConfiguration.setDatabase(database);</span><br><span class="line">        <span class="keyword">return</span> standaloneConfiguration;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">KryoRedisSerializer</span>&lt;<span class="title">T</span>&gt; <span class="keyword">implements</span> <span class="title">RedisSerializer</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">        Logger logger = LoggerFactory.getLogger(KryoRedisSerializer.class);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">byte</span>[] EMPTY_BYTE_ARRAY = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;Kryo&gt; kryos = ThreadLocal.withInitial(Kryo::<span class="keyword">new</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> Class&lt;T&gt; clazz;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">KryoRedisSerializer</span><span class="params">(Class&lt;T&gt; clazz)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">super</span>();</span><br><span class="line">            <span class="keyword">this</span>.clazz = clazz;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">byte</span>[] serialize(T t) <span class="keyword">throws</span> SerializationException &#123;</span><br><span class="line">            <span class="keyword">if</span> (t == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> EMPTY_BYTE_ARRAY;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            Kryo kryo = kryos.get();</span><br><span class="line">            kryo.setReferences(<span class="keyword">false</span>);</span><br><span class="line">            kryo.register(clazz);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">try</span> (ByteArrayOutputStream baos = <span class="keyword">new</span> ByteArrayOutputStream(); Output output = <span class="keyword">new</span> Output(baos)) &#123;</span><br><span class="line">                kryo.writeClassAndObject(output, t);</span><br><span class="line">                output.flush();</span><br><span class="line">                <span class="keyword">return</span> baos.toByteArray();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                logger.error(e.getMessage(), e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> EMPTY_BYTE_ARRAY;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> T <span class="title">deserialize</span><span class="params">(<span class="keyword">byte</span>[] bytes)</span> <span class="keyword">throws</span> SerializationException </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (bytes == <span class="keyword">null</span> || bytes.length &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            Kryo kryo = kryos.get();</span><br><span class="line">            kryo.setReferences(<span class="keyword">false</span>);</span><br><span class="line">            kryo.register(clazz);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">try</span> (Input input = <span class="keyword">new</span> Input(bytes)) &#123;</span><br><span class="line">                <span class="keyword">return</span> (T) kryo.readClassAndObject(input);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                logger.error(e.getMessage(), e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="RedisCache-注解类"><a href="#RedisCache-注解类" class="headerlink" title="RedisCache 注解类"></a>RedisCache 注解类</h2><p>其中每个属性都有注解</p>
+<ul>
+<li>keys    缓存Keys值</li>
+<li>cacheNull 是否缓存null值</li>
+<li>ttl 生存时间</li>
+<li>timeunit 时间单位</li>
+<li>flush 是否每次刷新缓存</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Target(&#123; ElementType.METHOD &#125;)</span></span><br><span class="line"><span class="meta">@Retention(RetentionPolicy.RUNTIME)</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> RedisCache &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 缓存Keys值</span></span><br><span class="line">    String[] keys();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 是否缓存null值</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">cacheNull</span><span class="params">()</span> <span class="keyword">default</span> <span class="keyword">false</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 生存时间，默认为-1</span></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">ttl</span><span class="params">()</span> <span class="keyword">default</span> -1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 时间单位，默认秒</span></span><br><span class="line">    <span class="function">TimeUnit <span class="title">timeUnit</span><span class="params">()</span> <span class="keyword">default</span> TimeUnit.SECONDS</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 每访问一次刷新缓存，默认为false</span></span><br><span class="line">    <span class="comment">// 如果为true相当于没有获取缓存数据</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">flush</span><span class="params">()</span> <span class="keyword">default</span> <span class="keyword">false</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="切面类"><a href="#切面类" class="headerlink" title="切面类"></a>切面类</h2><p>注解实现的主体，通过拦截RedisCache注解，采用Springboot的AOP功能，在方法执行前获取到执行RedisCache的方法，以及属性，在方法执行之后进行结果缓存</p>
+<p><strong>※</strong> 值得注意的是在替换#{参数名}的时候，时间复杂度为 <code>M x N</code> ，效率比较低，如果有更好的方法，欢迎读者留言或者联系我</p>
+<p><strong>※</strong> 还有就是在进行参数名替换时，要求参数为一个普通类型(具体参见isCommonType方法)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Aspect</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Lazy(false)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisCacheAspect</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Logger LOGGER = LoggerFactory.getLogger(RedisCacheAspect.class);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 用于存放被调用的方法</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ThreadLocal&lt;Method&gt; methodTL = <span class="keyword">new</span> ThreadLocal&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> RedisOperator redisOperator;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Pointcut(&quot;@annotation(com.marveal.cache.RedisCache)&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">point</span><span class="params">()</span> </span>&#123; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Around(&quot;point()&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">around</span><span class="params">(ProceedingJoinPoint joinPoint)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">        <span class="comment">// 获取 RedisCache 注解</span></span><br><span class="line">        RedisCache redisCache = getRedisCacheAnnotation(joinPoint);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 获取解析后的key</span></span><br><span class="line">        Set&lt;String&gt; keys = parseKey(joinPoint, redisCache);</span><br><span class="line">        Assert.notEmpty(keys, <span class="string">&quot;RedisCache &gt;&gt; keys 不能为空&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// redis中获取缓存值</span></span><br><span class="line">        Object data = getDateFromRedis(keys, methodTL.get());</span><br><span class="line">        <span class="comment">// 1. 缓存中没有值</span></span><br><span class="line">        <span class="comment">// 2. 缓存中有值，不需要刷新缓存</span></span><br><span class="line">        <span class="keyword">if</span> (!ObjectUtils.isEmpty(data) &amp;&amp; !redisCache.flush()) &#123;</span><br><span class="line">            <span class="keyword">return</span> data;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 执行方法获取结果</span></span><br><span class="line">        data = joinPoint.proceed();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 存入结果到redis中</span></span><br><span class="line">        cacheResult(redisCache, keys, data);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取方法上的 RedisCache 注解</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> joinPoint 切点</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> RedisCache 注解</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> NoSuchMethodException 没有获取到方法</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> RedisCache <span class="title">getRedisCacheAnnotation</span><span class="params">(ProceedingJoinPoint joinPoint)</span> <span class="keyword">throws</span> NoSuchMethodException </span>&#123;</span><br><span class="line">        <span class="comment">// 获取该注解的类</span></span><br><span class="line">        Class&lt;?&gt; clazz = joinPoint.getTarget().getClass();</span><br><span class="line">        <span class="comment">// 获取该注解的方法名</span></span><br><span class="line">        String methodName = joinPoint.getSignature().getName();</span><br><span class="line">        <span class="comment">// 获取该注解的方法参数</span></span><br><span class="line">        Class&lt;?&gt;[] paramTypes = ((MethodSignature) joinPoint.getSignature()).getParameterTypes();</span><br><span class="line">        <span class="comment">// 根据类，方法，方法参数获取到具体的方法</span></span><br><span class="line">        Method method = clazz.getMethod(methodName, paramTypes);</span><br><span class="line">        <span class="comment">// 获取该方法，用于在解析json字符串时使用</span></span><br><span class="line">        methodTL.set(method);</span><br><span class="line">        <span class="keyword">return</span> method.getAnnotation(RedisCache.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 解析缓存keys值</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> joinPoint  切点</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> redisCache RedisCache 注解</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 解析后的keys值</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> Set&lt;String&gt; <span class="title">parseKey</span><span class="params">(ProceedingJoinPoint joinPoint, RedisCache redisCache)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 获取方法参数</span></span><br><span class="line">        Object[] params = joinPoint.getArgs();</span><br><span class="line">        <span class="comment">// 获取参数名</span></span><br><span class="line">        String[] paramNames = ((MethodSignature) joinPoint.getSignature()).getParameterNames();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 获取原始key值</span></span><br><span class="line">        String[] keys = redisCache.keys();</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> len = keys.length;</span><br><span class="line">        <span class="comment">// keys值为空列表报错</span></span><br><span class="line">        <span class="keyword">if</span> (len &lt; <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 如果没有参数，就返回原始keys值</span></span><br><span class="line">        <span class="keyword">if</span> (ObjectUtils.isEmpty(params) || ObjectUtils.isEmpty(paramNames)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> HashSet&lt;&gt;(Arrays.asList(keys));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Set&lt;String&gt; keysSet = <span class="keyword">new</span> HashSet&lt;&gt;();</span><br><span class="line">        <span class="comment">// 遍历keys数组,进行参数替换</span></span><br><span class="line">        <span class="keyword">for</span> (String key : keys) &#123;</span><br><span class="line">            keysSet.add(replaceKey(key, paramNames, params));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> keysSet;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 替换key字符串  #&#123;id&#125; 替换为真正的数据</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> key        源keys值</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> paramNames 参数名</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> params     参数值</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 替换后的key字符串</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> String <span class="title">replaceKey</span><span class="params">(String key, String[] paramNames, Object[] params)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> len = paramNames.length;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">            String oldStr = <span class="string">&quot;#&#123;&quot;</span> + paramNames[i] + <span class="string">&quot;&#125;&quot;</span>;</span><br><span class="line">            <span class="keyword">boolean</span> commonType = isCommonType(params[i]);</span><br><span class="line">            <span class="keyword">if</span> (key.contains(oldStr) &amp;&amp; commonType) &#123;</span><br><span class="line">                key = key.replace(oldStr, String.valueOf(params[i]));</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!commonType) &#123;</span><br><span class="line">                LOGGER.error(<span class="string">&quot;&#123;&#125; is not a common type : [String, Integer, Float, Double, Long, Byte, Character, Boolean]&quot;</span>, paramNames[i]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> key;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 判断对象是否为 普通对象</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> obj 对象</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> true | false</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isCommonType</span><span class="params">(Object obj)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> obj <span class="keyword">instanceof</span> String</span><br><span class="line">                || obj <span class="keyword">instanceof</span> Integer</span><br><span class="line">                || obj <span class="keyword">instanceof</span> Float</span><br><span class="line">                || obj <span class="keyword">instanceof</span> Double</span><br><span class="line">                || obj <span class="keyword">instanceof</span> Long</span><br><span class="line">                || obj <span class="keyword">instanceof</span> Byte</span><br><span class="line">                || obj <span class="keyword">instanceof</span> Character</span><br><span class="line">                || obj <span class="keyword">instanceof</span> Boolean;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 缓存结果</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> redisCache RedisCache 注解</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> cacheKeys  缓存值</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> data       需要缓存的数据</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">cacheResult</span><span class="params">(RedisCache redisCache, Set&lt;String&gt; cacheKeys, Object data)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 结果为null, 要求不缓存null, 就不缓存</span></span><br><span class="line">        <span class="keyword">if</span> (data == <span class="keyword">null</span> &amp;&amp; !redisCache.cacheNull()) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 获取时间</span></span><br><span class="line">        <span class="keyword">int</span> ttl = redisCache.ttl();</span><br><span class="line">        <span class="comment">// 根据key值批量缓存</span></span><br><span class="line">        <span class="keyword">if</span> (ttl &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            TimeUnit timeUnit = redisCache.timeUnit();</span><br><span class="line">            redisOperator.saveBatchWithEx(cacheKeys, data, ttl, timeUnit);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            redisOperator.saveBatch(cacheKeys, data);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 从redis中获取数据</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> cacheKeys 缓存的key值列表</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 数据</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> Object <span class="title">getDateFromRedis</span><span class="params">(Set&lt;String&gt; cacheKeys, Method method)</span> <span class="keyword">throws</span> ClassNotFoundException </span>&#123;</span><br><span class="line">        Class&lt;?&gt; returnType = method.getReturnType();</span><br><span class="line">        <span class="keyword">if</span> (returnType == <span class="keyword">void</span>.class) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 获取数据</span></span><br><span class="line">        <span class="keyword">return</span> redisOperator.get(cacheKeys);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Redis-工具类"><a href="#Redis-工具类" class="headerlink" title="Redis 工具类"></a>Redis 工具类</h2><p>笔者封装了一些方法进行调用</p>
+<p><strong>※</strong> 注意: 在从多个key值中获取值时，返回超过一半的相同数据</p>
+<p>例如：</p>
+<p>一个key，至少一个数据有值</p>
+<p>三个key，返回两个是相同的数据</p>
+<p>五个key，返回三个是相同的数据</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisOperator</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> RedisTemplate&lt;String, Object&gt; redisTemplate;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 批量插入</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> cacheNames 缓存key值</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> data       需要缓存的数据</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">saveBatch</span><span class="params">(Collection&lt;String&gt; cacheNames, Object data)</span> </span>&#123;</span><br><span class="line">        Map&lt;String, Object&gt; map = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (String cacheName : cacheNames) &#123;</span><br><span class="line">            map.put(cacheName, data);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            redisTemplate.opsForValue().multiSet(map);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BusinessException(<span class="string">&quot;批量插入缓存失败&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * lua脚本批量插入(含过期时间)</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> cacheNames 缓存key值</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> data       需要缓存的数据</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> ttl        过期时间</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> timeUnit   时间单位</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">saveBatchWithEx</span><span class="params">(Collection&lt;String&gt; cacheNames, Object data, <span class="keyword">int</span> ttl, TimeUnit timeUnit)</span> </span>&#123;</span><br><span class="line">        DefaultRedisScript&lt;Boolean&gt; redisScriptBoolean = <span class="keyword">new</span> DefaultRedisScript&lt;&gt;();</span><br><span class="line">        redisScriptBoolean.setResultType(Boolean.class);</span><br><span class="line">        redisScriptBoolean.setScriptSource(</span><br><span class="line">                <span class="keyword">new</span> ResourceScriptSource(<span class="keyword">new</span> ClassPathResource(<span class="string">&quot;redis/script/saveBatchWithEx.lua&quot;</span>)));</span><br><span class="line">        <span class="keyword">long</span> ex = timeUnit.toSeconds(ttl);</span><br><span class="line">        Boolean success = redisTemplate.execute(redisScriptBoolean, <span class="keyword">new</span> ArrayList&lt;&gt;(cacheNames), data, ex);</span><br><span class="line">        <span class="keyword">if</span> (success == <span class="keyword">null</span> || !success) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BusinessException(<span class="string">&quot;执行lua脚本失败&quot;</span>, ExceptionType.LUA_EXECUTE_EXCEPTION);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 从redis中获取数据</span></span><br><span class="line"><span class="comment">     * 从多个key中获取数据，返回超过一半的相同数据</span></span><br><span class="line"><span class="comment">     * 如果没有数据超过一半，则返回null值</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> cacheKeys 缓存的key值列表</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 数据</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">get</span><span class="params">(Collection&lt;String&gt; cacheKeys)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (cacheKeys == <span class="keyword">null</span> || cacheKeys.size() &lt; <span class="number">1</span>) <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> len = cacheKeys.size();</span><br><span class="line"></span><br><span class="line">        List&lt;Object&gt; resultList = redisTemplate.opsForValue().multiGet(cacheKeys);</span><br><span class="line">        <span class="keyword">if</span> (resultList == <span class="keyword">null</span> || resultList.size() &lt; <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Map&lt;String, Integer&gt; map = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (Object result : resultList) &#123;</span><br><span class="line">            String md5Str = MD5Utils.getMD5Str(String.valueOf(result));</span><br><span class="line">            map.put(md5Str, map.getOrDefault(md5Str, <span class="number">1</span>) + <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (map.get(md5Str) &gt; len &gt;&gt; <span class="number">1</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> result;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="用于批量插入含过期时间的lua文件"><a href="#用于批量插入含过期时间的lua文件" class="headerlink" title="用于批量插入含过期时间的lua文件"></a>用于批量插入含过期时间的lua文件</h3><p>采用for循环的方式进行插入</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> keys, data, ex = KEYS, ARGV[<span class="number">1</span>], ARGV[<span class="number">2</span>]</span><br><span class="line"><span class="keyword">local</span> result</span><br><span class="line"><span class="keyword">for</span> i,key <span class="keyword">in</span> <span class="built_in">ipairs</span>(keys) <span class="keyword">do</span></span><br><span class="line">	result = redis.call(<span class="string">&#x27;setex&#x27;</span>, key, ex, data)</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RedisCache(keys = &#123;&quot;TEST:#&#123;id&#125;&quot;&#125;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> POJO <span class="title">query</span><span class="params">(Integer id)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> mapper.select(id);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2020/11/15/%E8%87%AA%E5%AE%9A%E4%B9%89%E5%9F%BA%E4%BA%8E%E6%B3%A8%E8%A7%A3%E7%9A%84Redis%E7%BC%93%E5%AD%98/" title="自定义基于注解的Redis缓存" target="_blank" rel="external">https://rabbit-mar.github.io/2020/11/15/%E8%87%AA%E5%AE%9A%E4%B9%89%E5%9F%BA%E4%BA%8E%E6%B3%A8%E8%A7%A3%E7%9A%84Redis%E7%BC%93%E5%AD%98/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+  
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: '自定义基于注解的Redis缓存',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>

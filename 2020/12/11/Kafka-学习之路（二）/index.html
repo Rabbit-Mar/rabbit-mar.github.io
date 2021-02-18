@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Kafka 学习之路（二） | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="Kafka 学习笔记的第二节：海量日志收集架构设计">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka 学习之路（二）">
+<meta property="og:url" content="https://rabbit-mar.github.io/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="Kafka 学习笔记的第二节：海量日志收集架构设计">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picsum.photos/1080/400">
+<meta property="article:published_time" content="2020-12-10T23:56:18.000Z">
+<meta property="article:modified_time" content="2021-02-18T15:04:21.783Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="Kafka">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">34</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/"
+              class="title">分库分表之sharding-jdbc&amp;mycat</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020-12-23</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%94%EF%BC%89%E2%80%94%E2%80%94-%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84/"
+              class="title">Redis学习之路（五）—— 集群架构</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-11T00:02:55.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">Kafka 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:56:18.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%B8%80%EF%BC%89/"
+              class="title">Kafka 学习之路（一）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:54:03.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">RabbitMQ 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-05T05:20:31.000Z" itemprop="datePublished">2020-12-05</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Kafka-学习之路（二）" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklb01amo0053tv029fn4fl75 noopener">
+        <img src="https://picsum.photos/1080/400" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    <div class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      Kafka 学习之路（二）
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/" class="article-date">
+	  <time datetime="2020-12-10T23:56:18.000Z" itemprop="datePublished">2020年12月11日07时</time>
+	</a>
+</span>
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Kafka/" rel="tag">Kafka</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	2.8k(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	15(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/#comments"
+            class="article-comment-link">评论</a></span>
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+      <h2 id="海量日志收集架构设计"><a href="#海量日志收集架构设计" class="headerlink" title="海量日志收集架构设计"></a>海量日志收集架构设计</h2><p>beats: 主要是用于收集日志，例如Filebeat底层使用Golang编写，性能好。业务代码中使用log打印出来的日志都会使用Filebeat抓取出来，输入到其他地方。</p>
+<p>在这个架构中Beats中抓取到的数据全部输出到Kafka中，通过Kafka输入到logstash中进行过滤，将过滤后的数据输入到es中，使用kibana进行数据展示</p>
+<h3 id=""><a href="#" class="headerlink" title=""></a><img src="/images/2020/12/11/45ad0ac9-bbca-4f7c-a220-00703e2c833a.png" alt="1607174745919"></h3><p>项目中使用的架构设计</p>
+<p><img src="/images/2020/12/11/1b375af3-303b-463b-9903-1a0122b4e058.png" alt="1607175261434"></p>
+<p><img src="/images/2020/12/11/8e2a50ef-f924-48e8-9388-0a0405282c58.png" alt="1607175422692"></p>
+<h2 id="Kafka高吞吐核心实战-日志输出"><a href="#Kafka高吞吐核心实战-日志输出" class="headerlink" title="Kafka高吞吐核心实战 - 日志输出"></a>Kafka高吞吐核心实战 - 日志输出</h2><h3 id="log4j2的使用"><a href="#log4j2的使用" class="headerlink" title="log4j2的使用"></a>log4j2的使用</h3><ul>
+<li><p>日志输出</p>
+</li>
+<li><p>日志分级</p>
+</li>
+<li><p>日志过滤</p>
+</li>
+<li><p>MDC线程变量</p>
+<p>​    slf4j框架的功能，可以认为它是在日志中的ThreadLocal，跟着每一个线程来的。他的作用是跟着每一次请求都会执行某些方法，这些日志都可以进入到一次线程的局部变量里面，打日志的时候如果有一些特殊的变量需要put到MDC中，可以理解为一个不可写不可变的Map。当EventLog4f2这个对象创建好之后，这里面的内容就不可变了，在日志收集之前可以往里面put很多内容，当执行收集的过程的时候就不可变了。</p>
+</li>
+</ul>
+<h4 id="依赖环境"><a href="#依赖环境" class="headerlink" title="依赖环境"></a>依赖环境</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.5.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">relativePath</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">exclusions</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">exclusion</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-logging<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">exclusion</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">exclusions</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-log4j2<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.lmax<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>disruptor<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.4.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>cn.hutool<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>hutool-json<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.5.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="log4j2文件"><a href="#log4j2文件" class="headerlink" title="log4j2文件"></a>log4j2文件</h4><p>具体配置信息详见官方：<a target="_blank" rel="noopener" href="https://logging.apache.org/log4j/2.x/manual/configuration.html">https://logging.apache.org/log4j/2.x/manual/configuration.html</a></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span></span><br><span class="line"><span class="comment">&lt;!--https://logging.apache.org/log4j/2.x/manual/configuration.html--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">Configuration</span> <span class="attr">status</span>=<span class="string">&quot;error&quot;</span> <span class="attr">schema</span>=<span class="string">&quot;Log4J-V2.0.xsd&quot;</span> <span class="attr">monitorInterval</span>=<span class="string">&quot;600&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">Properties</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Property</span> <span class="attr">name</span>=<span class="string">&quot;LOG_HOME&quot;</span> <span class="attr">value</span>=<span class="string">&quot;logs&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Property</span> <span class="attr">name</span>=<span class="string">&quot;FILE_HOME&quot;</span> <span class="attr">value</span>=<span class="string">&quot;logger-parent&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Property</span> <span class="attr">name</span>=<span class="string">&quot;patternLayout&quot;</span> <span class="attr">value</span>=<span class="string">&quot;[%d&#123;yyyy-MM-dd&#x27;T&#x27;HH:mm:ss.SSSZZ&#125;] [%level&#123;length=5&#125;] [%thread-%tid] [%logger] [%X&#123;hostName&#125;] [%X&#123;ip&#125;] [%X&#123;applicationName&#125;] [%F:%L, %C.%M] [%m] ## &#x27;%ex&#x27;%n&quot;</span>/&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">Properties</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">Appenders</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Console</span> <span class="attr">name</span>=<span class="string">&quot;Console&quot;</span> <span class="attr">target</span>=<span class="string">&quot;SYSTEM_OUT&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">PatternLayout</span> <span class="attr">pattern</span>=<span class="string">&quot;$&#123;patternLayout&#125;&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">Console</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">RollingRandomAccessFile</span> <span class="attr">name</span>=<span class="string">&quot;appAppender&quot;</span></span></span><br><span class="line"><span class="tag">                             <span class="attr">fileName</span>=<span class="string">&quot;$&#123;LOG_HOME&#125;/app-$&#123;FILE_HOME&#125;.log&quot;</span></span></span><br><span class="line"><span class="tag">                             <span class="attr">filePattern</span>=<span class="string">&quot;$&#123;LOG_HOME&#125;/app-$&#123;FILE_HOME&#125;-%d&#123;yyyy-MM-dd&#125;-%i.log&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">PatternLayout</span> <span class="attr">pattern</span>=<span class="string">&quot;$&#123;patternLayout&#125;&quot;</span>/&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">Policies</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">TimeBasedTriggeringPolicy</span> <span class="attr">interval</span>=<span class="string">&quot;1&quot;</span> <span class="attr">modulate</span>=<span class="string">&quot;true&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">SizeBasedTriggeringPolicy</span> <span class="attr">size</span>=<span class="string">&quot;500M&quot;</span>/&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">Policies</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">DefaultRolloverStrategy</span> <span class="attr">max</span>=<span class="string">&quot;20&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">RollingRandomAccessFile</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">RollingRandomAccessFile</span>  <span class="attr">name</span>=<span class="string">&quot;errorAppender&quot;</span></span></span><br><span class="line"><span class="tag">                              <span class="attr">fileName</span>=<span class="string">&quot;$&#123;LOG_HOME&#125;/error-$&#123;FILE_HOME&#125;.log&quot;</span></span></span><br><span class="line"><span class="tag">                              <span class="attr">filePattern</span>=<span class="string">&quot;$&#123;LOG_HOME&#125;/error-$&#123;FILE_HOME&#125;-%d&#123;yyyy-MM-dd&#125;-%i.log&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">PatternLayout</span> <span class="attr">pattern</span>=<span class="string">&quot;$&#123;patternLayout&#125;&quot;</span>/&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">Filters</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">ThresholdFilter</span> <span class="attr">level</span>=<span class="string">&quot;warn&quot;</span> <span class="attr">onMatch</span>=<span class="string">&quot;ACCEPT&quot;</span> <span class="attr">onMismatch</span>=<span class="string">&quot;DENY&quot;</span>/&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">Filters</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">Policies</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">TimeBasedTriggeringPolicy</span> <span class="attr">interval</span>=<span class="string">&quot;1&quot;</span> <span class="attr">modulate</span>=<span class="string">&quot;true&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">SizeBasedTriggeringPolicy</span> <span class="attr">size</span>=<span class="string">&quot;500M&quot;</span>/&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">Policies</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">DefaultRolloverStrategy</span> <span class="attr">max</span>=<span class="string">&quot;20&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">RollingRandomAccessFile</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">Appenders</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">Loggers</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">AsyncLogger</span> <span class="attr">name</span>=<span class="string">&quot;com.marveal.*&quot;</span> <span class="attr">level</span>=<span class="string">&quot;info&quot;</span> <span class="attr">includeLocation</span>=<span class="string">&quot;true&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">AppenderRef</span> <span class="attr">ref</span>=<span class="string">&quot;appAppender&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">AsyncLogger</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">AsyncLogger</span> <span class="attr">name</span>=<span class="string">&quot;com.marveal.*&quot;</span> <span class="attr">level</span>=<span class="string">&quot;info&quot;</span> <span class="attr">includeLocation</span>=<span class="string">&quot;true&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">AppenderRef</span> <span class="attr">ref</span>=<span class="string">&quot;errorAppender&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">AsyncLogger</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">Root</span> <span class="attr">level</span>=<span class="string">&quot;info&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">AppenderRef</span> <span class="attr">ref</span>=<span class="string">&quot;Console&quot;</span>/&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">AppenderRef</span> <span class="attr">ref</span>=<span class="string">&quot;appAppender&quot;</span>/&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">AppenderRef</span> <span class="attr">ref</span>=<span class="string">&quot;errorAppender&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">Root</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">Loggers</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">Configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="使用MDC赋值"><a href="#使用MDC赋值" class="headerlink" title="使用MDC赋值"></a>使用MDC赋值</h4><p>由于log4j2使用了%X表达式，那么对应的值需要使用MDC进行赋值，在日志打印前进行方法的一次调用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InputMDC</span> <span class="keyword">implements</span> <span class="title">EnvironmentAware</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Environment env;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setEnvironment</span><span class="params">(Environment environment)</span> </span>&#123;</span><br><span class="line">        env = environment;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">putMDC</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        InetAddress ia = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            ia = InetAddress.getLocalHost();</span><br><span class="line">            MDC.put(<span class="string">&quot;hostName&quot;</span>, ia.getHostName());</span><br><span class="line">            MDC.put(<span class="string">&quot;ip&quot;</span>, ia.getHostAddress());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnknownHostException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        MDC.put(<span class="string">&quot;applicationName&quot;</span>, env.getProperty(<span class="string">&quot;spring.application.name&quot;</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="FileBeat的使用"><a href="#FileBeat的使用" class="headerlink" title="FileBeat的使用"></a>FileBeat的使用</h3><ul>
+<li>安装入门</li>
+<li>配置文件</li>
+<li>对接Kafka</li>
+<li>实战应用</li>
+</ul>
+<h4 id="启动Zookeeper"><a href="#启动Zookeeper" class="headerlink" title="启动Zookeeper"></a>启动Zookeeper</h4><h4 id="启动Kafka"><a href="#启动Kafka" class="headerlink" title="启动Kafka"></a>启动Kafka</h4><p>创建两个topic</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kafka-topics.sh --create --topic app-logger-parent --bootstrap-server &lt;kafka-server-ip:port&gt; --partitions 1 --replication-factor 1</span><br><span class="line">kafka-topics.sh --create --topic error-logger-parent --bootstrap-server &lt;kafka-server-ip:port&gt; --partitions 1 --replication-factor 1</span><br></pre></td></tr></table></figure>
+<h4 id="FileBeat的安装"><a href="#FileBeat的安装" class="headerlink" title="FileBeat的安装"></a>FileBeat的安装</h4><ol>
+<li><p>docker安装</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull elastic/filebeat:7.9.3</span><br></pre></td></tr></table></figure></li>
+<li><p>创建文件 <code>/mydata/filebeat/filebeat.yml</code></p>
+<p>详细配置详见官网：<a target="_blank" rel="noopener" href="https://www.elastic.co/guide/en/beats/filebeat/7.x/configuration-filebeat-options.html">https://www.elastic.co/guide/en/beats/filebeat/7.x/configuration-filebeat-options.html</a></p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">filebeat.inputs:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">type:</span> <span class="string">log</span></span><br><span class="line">  <span class="attr">paths:</span> </span><br><span class="line">    <span class="bullet">-</span> <span class="string">/root/logs/app-logger-parent.log</span> <span class="comment"># 日志所在位置 </span></span><br><span class="line">  <span class="attr">document_type:</span> <span class="string">&quot;app-log&quot;</span>	<span class="comment"># 文档名</span></span><br><span class="line">  <span class="attr">multiline:</span> </span><br><span class="line">  	<span class="attr">type:</span> <span class="string">pattern</span></span><br><span class="line">    <span class="attr">pattern:</span> <span class="string">&#x27;^\[&#x27;</span></span><br><span class="line">    <span class="attr">negate:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">match:</span> <span class="string">after</span></span><br><span class="line">    <span class="attr">max_lines:</span> <span class="number">2000</span></span><br><span class="line">    <span class="attr">timeout:</span> <span class="string">2s</span>				</span><br><span class="line">  <span class="attr">fields:</span></span><br><span class="line">    <span class="attr">log_biz:</span> <span class="string">logger-parent</span></span><br><span class="line">    <span class="attr">log_topic:</span> <span class="string">app-logger-parent</span></span><br><span class="line">    <span class="attr">env:</span> <span class="string">dev</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> <span class="attr">type:</span> <span class="string">log</span></span><br><span class="line">  <span class="attr">paths:</span> </span><br><span class="line">    <span class="bullet">-</span> <span class="string">/root/logs/error-logger-parent.log</span></span><br><span class="line">  <span class="attr">document_type:</span> <span class="string">&quot;error-log&quot;</span></span><br><span class="line">  <span class="attr">multiline:</span> </span><br><span class="line">  	<span class="attr">type:</span> <span class="string">pattern</span></span><br><span class="line">    <span class="attr">pattern:</span> <span class="string">&#x27;^\[&#x27;</span></span><br><span class="line">    <span class="attr">negate:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">match:</span> <span class="string">after</span></span><br><span class="line">    <span class="attr">max_lines:</span> <span class="number">2000</span></span><br><span class="line">    <span class="attr">timeout:</span> <span class="string">2s</span></span><br><span class="line">  <span class="attr">fields:</span></span><br><span class="line">    <span class="attr">log_biz:</span> <span class="string">logger-parent</span></span><br><span class="line">    <span class="attr">log_topic:</span> <span class="string">error-logger-parent</span></span><br><span class="line">    <span class="attr">env:</span> <span class="string">dev</span></span><br><span class="line"></span><br><span class="line"><span class="attr">output.kafka:</span></span><br><span class="line">  <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">hosts:</span> [<span class="string">&quot;192.168.1.2:9092&quot;</span>]		<span class="comment"># kafka服务器</span></span><br><span class="line">  <span class="attr">topic:</span> <span class="string">&#x27;<span class="template-variable">%&#123;[fields.log_topic]&#125;</span>&#x27;</span></span><br><span class="line">  <span class="attr">partition.hash:</span></span><br><span class="line">    <span class="attr">reachable_only:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">required_acks:</span> <span class="number">1</span></span><br><span class="line">  <span class="attr">compression:</span> <span class="string">gzip</span></span><br><span class="line">  <span class="attr">max_message_bytes:</span> <span class="number">1000000</span></span><br><span class="line"></span><br><span class="line"><span class="attr">logging.to_files:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure></li>
+<li><p>启动filebeat</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">docker run -d \</span><br><span class="line">  --name&#x3D;log-filebeat \</span><br><span class="line">  --restart&#x3D;always \</span><br><span class="line">  -v &#x2F;mydata&#x2F;filebeat&#x2F;filebeat.yml:&#x2F;usr&#x2F;share&#x2F;filebeat&#x2F;filebeat.yml \</span><br><span class="line">  elastic&#x2F;filebeat:&lt;version&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="启动logstash"><a href="#启动logstash" class="headerlink" title="启动logstash"></a>启动logstash</h4></li>
+<li><p>下载logstash，启动logstash</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker pull logstash:7.9.3</span><br><span class="line">docker run -d --name logstash logstash:&lt;version&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>拷贝文件夹到本地</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker cp logstash:/usr/share/logstash/config /mydata/logstash/config</span><br><span class="line">docker cp logstash:/usr/share/logstash/pipline /mydata/logstash/pipline</span><br></pre></td></tr></table></figure></li>
+<li><p>创建文件 <code>/mydata/logstash/config/logstash.yml</code></p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">http.host:</span> <span class="string">&quot;0.0.0.0&quot;</span></span><br><span class="line"><span class="attr">xpack.monitoring.elasticsearch.hosts:</span> [ <span class="string">&quot;http://&lt;es-ip&gt;:9200&quot;</span> ]</span><br></pre></td></tr></table></figure></li>
+<li><p>编辑文件 <code>/mydata/logstash/config/pipelines.yml</code></p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> <span class="attr">pipeline.id:</span> <span class="string">logger-parent</span></span><br><span class="line">  <span class="attr">path.config:</span> <span class="string">&quot;/usr/share/logstash/pipeline/logger-parent.conf&quot;</span></span><br><span class="line">  <span class="attr">pipeline.workers:</span> <span class="number">2</span></span><br></pre></td></tr></table></figure></li>
+<li><p>编辑文件 <code>/mydata/logstash/config/jvm.options</code></p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">-Xms256m</span></span><br><span class="line"><span class="attr">-Xmx256m</span></span><br></pre></td></tr></table></figure></li>
+<li><p>创建文件 <code>/mydata/logstash/pipeline/logger-parent.conf</code></p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">input</span> &#123;</span><br><span class="line">  <span class="string">kafka</span> &#123;</span><br><span class="line">    <span class="string">topics_pattern</span> <span class="string">=&gt;</span> <span class="string">&quot;app-logger-parent.*&quot;</span></span><br><span class="line">    <span class="string">bootstrap_servers</span> <span class="string">=&gt;</span> <span class="string">&quot;192.168.1.2:9092&quot;</span></span><br><span class="line">    <span class="string">codec</span> <span class="string">=&gt;</span> <span class="string">json</span></span><br><span class="line">    <span class="string">consumer_threads</span> <span class="string">=&gt;</span> <span class="number">4</span></span><br><span class="line">    <span class="string">decorate_events</span> <span class="string">=&gt;</span> <span class="literal">true</span></span><br><span class="line">    <span class="string">group_id</span> <span class="string">=&gt;</span> <span class="string">&quot;app-logger-parent-group&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="string">kafka</span> &#123;</span><br><span class="line">    <span class="string">topics_pattern</span> <span class="string">=&gt;</span> <span class="string">&quot;error-logger-parent.*&quot;</span></span><br><span class="line">    <span class="string">bootstrap_servers</span> <span class="string">=&gt;</span> <span class="string">&quot;192.168.1.2:9092&quot;</span></span><br><span class="line">    <span class="string">codec</span> <span class="string">=&gt;</span> <span class="string">json</span></span><br><span class="line">    <span class="string">consumer_threads</span> <span class="string">=&gt;</span> <span class="number">4</span></span><br><span class="line">    <span class="string">decorate_events</span> <span class="string">=&gt;</span> <span class="literal">true</span></span><br><span class="line">    <span class="string">group_id</span> <span class="string">=&gt;</span> <span class="string">&quot;error-logger-parent-group&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="string">filter</span> &#123;</span><br><span class="line">  <span class="string">ruby</span> &#123;</span><br><span class="line">    <span class="string">code</span> <span class="string">=&gt;</span> <span class="string">&quot;event.set(&#x27;index_time&#x27;, event.timestamp.time.localtime.strftime(&#x27;%Y.%m.%d&#x27;))&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="string">if</span> <span class="string">&quot;app-logger-parent&quot;</span> <span class="string">in</span> [<span class="string">fields</span>][<span class="string">log_topic</span>] &#123;</span><br><span class="line">    <span class="string">grok</span> &#123;</span><br><span class="line">      <span class="string">match</span> <span class="string">=&gt;</span> [<span class="string">&quot;message&quot;</span>, <span class="string">&quot;\[<span class="template-variable">%&#123;NOTSPACE:currentDateTime&#125;</span>\] \[<span class="template-variable">%&#123;NOTSPACE:level&#125;</span>\] \[<span class="template-variable">%&#123;NOTSPACE:thraed_id&#125;</span>\] \[<span class="template-variable">%&#123;NOTSPACE:class&#125;</span>\] \[<span class="template-variable">%&#123;DATA:hostName&#125;</span>\] \[<span class="template-variable">%&#123;DATA:ip&#125;</span>\] \[<span class="template-variable">%&#123;DATA:applicationName&#125;</span>\] \[<span class="template-variable">%&#123;DATA:location&#125;</span>\] \[<span class="template-variable">%&#123;DATA:messageInfo&#125;</span>\] ## (\&#x27;\&#x27;|<span class="template-variable">%&#123;QUOTEDSTRING:throwable&#125;</span>)&quot;</span>]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="string">if</span> <span class="string">&quot;error-logger-parent&quot;</span> <span class="string">in</span> [<span class="string">fields</span>][<span class="string">log_topic</span>] &#123;</span><br><span class="line">    <span class="string">grok</span> &#123;</span><br><span class="line">      <span class="string">match</span> <span class="string">=&gt;</span> [<span class="string">&quot;message&quot;</span>, <span class="string">&quot;\[<span class="template-variable">%&#123;NOTSPACE:currentDateTime&#125;</span>\] \[<span class="template-variable">%&#123;NOTSPACE:level&#125;</span>\] \[<span class="template-variable">%&#123;NOTSPACE:thraed_id&#125;</span>\] \[<span class="template-variable">%&#123;NOTSPACE:class&#125;</span>\] \[<span class="template-variable">%&#123;DATA:hostName&#125;</span>\] \[<span class="template-variable">%&#123;DATA:ip&#125;</span>\] \[<span class="template-variable">%&#123;DATA:applicationName&#125;</span>\] \[<span class="template-variable">%&#123;DATA:location&#125;</span>\] \[<span class="template-variable">%&#123;DATA:messageInfo&#125;</span>\] ## (\&#x27;\&#x27;|<span class="template-variable">%&#123;QUOTEDSTRING:throwable&#125;</span>)&quot;</span>]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="string">output</span> &#123;</span><br><span class="line">  <span class="string">stdout</span> &#123; <span class="string">codec</span> <span class="string">=&gt;</span> <span class="string">rubydebug</span> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="string">output</span> &#123;</span><br><span class="line">  <span class="string">if</span> <span class="string">&quot;app-logger-parent&quot;</span> <span class="string">in</span> [<span class="string">fields</span>][<span class="string">log_topic</span>] &#123;</span><br><span class="line">    <span class="string">elasticsearch</span> &#123;</span><br><span class="line">      <span class="string">hosts</span> <span class="string">=&gt;</span> [<span class="string">&quot;192.168.1.2:9200&quot;</span>]</span><br><span class="line">      <span class="string">index</span> <span class="string">=&gt;</span> <span class="string">&quot;app-<span class="template-variable">%&#123;[fields][log_biz]&#125;</span>-<span class="template-variable">%&#123;index_time&#125;</span>&quot;</span></span><br><span class="line">      <span class="string">sniffing</span> <span class="string">=&gt;</span> <span class="literal">true</span></span><br><span class="line">      <span class="string">template_overwrite</span> <span class="string">=&gt;</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="string">if</span> <span class="string">&quot;error-logger-parent&quot;</span> <span class="string">in</span> [<span class="string">fields</span>][<span class="string">log_topic</span>] &#123;</span><br><span class="line">    <span class="string">elasticsearch</span> &#123;</span><br><span class="line">      <span class="string">hosts</span> <span class="string">=&gt;</span> [<span class="string">&quot;192.168.1.2:9200&quot;</span>]</span><br><span class="line">      <span class="string">index</span> <span class="string">=&gt;</span> <span class="string">&quot;error-<span class="template-variable">%&#123;[fields][log_biz]&#125;</span>-<span class="template-variable">%&#123;index_time&#125;</span>&quot;</span></span><br><span class="line">      <span class="string">sniffing</span> <span class="string">=&gt;</span> <span class="literal">true</span></span><br><span class="line">      <span class="string">template_overwrite</span> <span class="string">=&gt;</span> <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>启动logstash</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docker run -d \</span><br><span class="line">  --name=logstash \</span><br><span class="line">  --restart=always \</span><br><span class="line">  -p 5044:5044 \</span><br><span class="line">  -v /mydata/logstash/config:/usr/share/logstash/config \</span><br><span class="line">  -v /mydata/logstash/pipeline:/usr/share/logstash/pipeline \</span><br><span class="line">  --add-host  docker001:192.168.1.2 \</span><br><span class="line">  logstash:&lt;version&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="启动es"><a href="#启动es" class="headerlink" title="启动es"></a>启动es</h4></li>
+<li><p>下载es</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull elasticsearch:&lt;version&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>创建文件 <code>/mydata/es-log/config/elasticsearch.yml</code></p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">http.cors.enabled:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">http.cors.allow-origin:</span> <span class="string">&quot;*&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">cluster.name:</span> <span class="string">elasticsearch-log</span></span><br><span class="line"><span class="attr">node.name:</span> <span class="string">es-node</span></span><br><span class="line"></span><br><span class="line"><span class="attr">network.host:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></span><br><span class="line"><span class="attr">discovery.seed_hosts:</span> [<span class="string">&quot;192.168.1.2:9300&quot;</span>]</span><br><span class="line"><span class="attr">discovery.type:</span> <span class="string">single-node</span></span><br></pre></td></tr></table></figure></li>
+<li><p>启动es</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">docker run -d \</span><br><span class="line">-e ES_JAVA_OPTS=&quot;-Xms256m -Xmx256m&quot; \</span><br><span class="line">-p 9200:9200 \</span><br><span class="line">-p 9300:9300 \</span><br><span class="line">-v /mydata/es-log/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml \</span><br><span class="line">-v /mydata/es-log/data:/usr/share/elasticsearch/data \</span><br><span class="line">--name elasticsearch-log \</span><br><span class="line">elasticsearch:&lt;version&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="启动kibana"><a href="#启动kibana" class="headerlink" title="启动kibana"></a>启动kibana</h4></li>
+<li><p>下载kibana</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull kibana:&lt;version&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>创建文件 <code>/mydata/kibana/config/kibana.yml</code></p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">server.name:</span> <span class="string">kibana</span></span><br><span class="line"><span class="attr">server.host:</span> <span class="string">&quot;0&quot;</span></span><br><span class="line"><span class="attr">elasticsearch.hosts:</span> [ <span class="string">&quot;http://192.168.1.2:9200&quot;</span> ]</span><br><span class="line"><span class="attr">monitoring.ui.container.elasticsearch.enabled:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure></li>
+<li><p>启动kibana</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -v /mydata/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml -p 5601:5601 --name kibana kibana:&lt;version&gt;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h2 id="Kafka高吞吐核心实战-watcher监控告警"><a href="#Kafka高吞吐核心实战-watcher监控告警" class="headerlink" title="Kafka高吞吐核心实战 - watcher监控告警"></a>Kafka高吞吐核心实战 - watcher监控告警</h2><p><strong><em>※</em></strong> 使用告警功能需要至少黄金版服务</p>
+<blockquote>
+<p>elasticsearch的破解：<a target="_blank" rel="noopener" href="https://www.azurew.com/elk/3750.html">https://www.azurew.com/elk/3750.html</a></p>
+</blockquote>
+<ol>
+<li><p>打开kibana &gt; dev tool 输入以下内容，插入模板</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">PUT _template/error-logger-parent-</span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;template&quot;</span>: <span class="string">&quot;error-logger-parent-*&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;order&quot;</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">&quot;settings&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;index&quot;</span>: &#123;</span><br><span class="line">      <span class="attr">&quot;refresh_interval&quot;</span>: <span class="string">&quot;5s&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">&quot;mappings&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;_default_&quot;</span>: &#123;</span><br><span class="line">      <span class="attr">&quot;dynamic_templates&quot;</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">&quot;message_field&quot;</span>: &#123;</span><br><span class="line">            <span class="attr">&quot;match_mapping_type&quot;</span>: <span class="string">&quot;string&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;path_match&quot;</span>: <span class="string">&quot;message&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;mapping&quot;</span>: &#123;</span><br><span class="line">              <span class="attr">&quot;norms&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">              <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span>,</span><br><span class="line">              <span class="attr">&quot;analyzer&quot;</span>: <span class="string">&quot;ik_max_word&quot;</span>,</span><br><span class="line">              <span class="attr">&quot;search_analyzer&quot;</span>: <span class="string">&quot;ik_max_word&quot;</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">&quot;throwable_field&quot;</span>: &#123;</span><br><span class="line">            <span class="attr">&quot;match_mapping_type&quot;</span>: <span class="string">&quot;string&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;path_match&quot;</span>: <span class="string">&quot;throwable&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;mapping&quot;</span>: &#123;</span><br><span class="line">              <span class="attr">&quot;norms&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">              <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span>,</span><br><span class="line">              <span class="attr">&quot;analyzer&quot;</span>: <span class="string">&quot;ik_max_word&quot;</span>,</span><br><span class="line">              <span class="attr">&quot;search_analyzer&quot;</span>: <span class="string">&quot;ik_max_word&quot;</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">&quot;string_fields&quot;</span>: &#123;</span><br><span class="line">            <span class="attr">&quot;match_mapping_type&quot;</span>: <span class="string">&quot;string&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;match&quot;</span>: <span class="string">&quot;*&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;mapping&quot;</span>: &#123;</span><br><span class="line">              <span class="attr">&quot;norms&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">              <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span>,</span><br><span class="line">              <span class="attr">&quot;analyzer&quot;</span>: <span class="string">&quot;ik_max_word&quot;</span>,</span><br><span class="line">              <span class="attr">&quot;search_analyzer&quot;</span>: <span class="string">&quot;ik_max_word&quot;</span>,</span><br><span class="line">              <span class="attr">&quot;fields&quot;</span>: &#123;</span><br><span class="line">                <span class="attr">&quot;keyword&quot;</span>: &#123;</span><br><span class="line">                  <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">                &#125;</span><br><span class="line">              &#125;</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      ],</span><br><span class="line">      <span class="attr">&quot;_all&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;enabled&quot;</span>: <span class="literal">false</span></span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">&quot;properties&quot;</span>: &#123;         </span><br><span class="line">        <span class="attr">&quot;hostName&quot;</span>: &#123;</span><br><span class="line">          <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">&quot;ip&quot;</span>: &#123;</span><br><span class="line">          <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;ip&quot;</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">&quot;level&quot;</span>: &#123;</span><br><span class="line">          <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">        &#125;,</span><br><span class="line">		<span class="attr">&quot;currentDateTime&quot;</span>: &#123;</span><br><span class="line">		  <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span></span><br><span class="line">		&#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>创建一个watch</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">PUT _watcher/watch/error_logger_parent_watcher</span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;trigger&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;schedule&quot;</span>: &#123;</span><br><span class="line">      <span class="attr">&quot;interval&quot;</span>: <span class="string">&quot;5s&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">&quot;input&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;search&quot;</span>: &#123;</span><br><span class="line">      <span class="attr">&quot;request&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;indices&quot;</span>: [<span class="string">&quot;&lt;error-logger-parent-&#123;now+8h/d&#125;&gt;&quot;</span>],</span><br><span class="line">        <span class="attr">&quot;body&quot;</span>: &#123;</span><br><span class="line">          <span class="attr">&quot;size&quot;</span>: <span class="number">0</span>,</span><br><span class="line">          <span class="attr">&quot;query&quot;</span>: &#123;</span><br><span class="line">            <span class="attr">&quot;bool&quot;</span>: &#123;</span><br><span class="line">              <span class="attr">&quot;must&quot;</span>: [&#123;</span><br><span class="line">                <span class="attr">&quot;term&quot;</span>: &#123; </span><br><span class="line">                  <span class="attr">&quot;level.keyword&quot;</span>: <span class="string">&quot;ERROR&quot;</span> </span><br><span class="line">                &#125;</span><br><span class="line">              &#125;],</span><br><span class="line">              <span class="attr">&quot;filter&quot;</span>: [</span><br><span class="line">                &#123;<span class="attr">&quot;range&quot;</span>: &#123;</span><br><span class="line">                  <span class="attr">&quot;currentDateTime&quot;</span>: &#123;</span><br><span class="line">                    <span class="attr">&quot;gt&quot;</span>: <span class="string">&quot;now-30s&quot;</span>,</span><br><span class="line">                    <span class="attr">&quot;lt&quot;</span>: <span class="string">&quot;now&quot;</span></span><br><span class="line">                  &#125;</span><br><span class="line">                &#125;&#125;</span><br><span class="line">              ]</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">&quot;condition&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;compare&quot;</span>: &#123;</span><br><span class="line">      <span class="attr">&quot;ctx.payload.hits.total&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;gt&quot;</span>: <span class="number">0</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">&quot;transform&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;search&quot;</span>: &#123;</span><br><span class="line">      <span class="attr">&quot;request&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;indices&quot;</span>: [<span class="string">&quot;&lt;error-logger-parent-&#123;now+8h/d&#125;&gt;&quot;</span>],</span><br><span class="line">        <span class="attr">&quot;body&quot;</span>: &#123;</span><br><span class="line">          <span class="attr">&quot;size&quot;</span>: <span class="number">1</span>,</span><br><span class="line">          <span class="attr">&quot;query&quot;</span>: &#123;</span><br><span class="line">            <span class="attr">&quot;bool&quot;</span>: &#123;</span><br><span class="line">              <span class="attr">&quot;must&quot;</span>: [&#123;</span><br><span class="line">                <span class="attr">&quot;term&quot;</span>: &#123; </span><br><span class="line">                  <span class="attr">&quot;level.keyword&quot;</span>: <span class="string">&quot;ERROR&quot;</span> </span><br><span class="line">                &#125;</span><br><span class="line">              &#125;],</span><br><span class="line">              <span class="attr">&quot;filter&quot;</span>: [</span><br><span class="line">                &#123;<span class="attr">&quot;range&quot;</span>: &#123;</span><br><span class="line">                  <span class="attr">&quot;currentDateTime&quot;</span>: &#123;</span><br><span class="line">                    <span class="attr">&quot;gt&quot;</span>: <span class="string">&quot;now-30s&quot;</span>,</span><br><span class="line">                    <span class="attr">&quot;lt&quot;</span>: <span class="string">&quot;now&quot;</span></span><br><span class="line">                  &#125;</span><br><span class="line">                &#125;&#125;</span><br><span class="line">              ]</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          <span class="attr">&quot;sort&quot;</span>: [&#123;</span><br><span class="line">            <span class="attr">&quot;currentDateTime&quot;</span>: &#123;</span><br><span class="line">              <span class="attr">&quot;order&quot;</span>: <span class="string">&quot;desc&quot;</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;]</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">&quot;actions&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;test_error&quot;</span>: &#123;</span><br><span class="line">      <span class="attr">&quot;webhook&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;method&quot;</span>: <span class="string">&quot;POST&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;url&quot;</span>: <span class="string">&quot;http://192.168.1.4:8001/accurateWatch&quot;</span>, <span class="comment">// IP为监控平台的IP地址</span></span><br><span class="line">        <span class="attr">&quot;body&quot;</span>: <span class="string">&quot;&#123;\&quot;title\&quot;: \&quot;异常信息告警\&quot;, \&quot;applicationName\&quot;: \&quot;&#123;&#123;#ctx.payload.hits.hits&#125;&#125;&#123;&#123;_source.applicationName&#125;&#125;&#123;&#123;/ctx.payload.hits.hits&#125;&#125;\&quot;, \&quot;level\&quot;: \&quot;告警级别P1\&quot;, \&quot;body\&quot;: \&quot;&#123;&#123;#ctx.payload.hits.hits&#125;&#125;&#123;&#123;_source.messageInfo&#125;&#125;&#123;&#123;/ctx.payload.hits.hits&#125;&#125;\&quot;, \&quot;executionTime\&quot;: \&quot;&#123;&#123;#ctx.payload.hits.hits&#125;&#125;&#123;&#123;_source.currentDateTime&#125;&#125;&#123;&#123;/ctx.payload.hits.hits&#125;&#125;\&quot;&#125;&quot;</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>编写接口处理请求</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WatcherController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping(&quot;/accurateWatch&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">accurateWatch</span><span class="params">(<span class="meta">@RequestBody</span> AccurateWatchMessage message)</span> </span>&#123;</span><br><span class="line">        System.out.println(HutoolJsonUtil.convertObjectToJSON(message));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AccurateWatchMessage</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String title;</span><br><span class="line">    <span class="keyword">private</span> String applicationName;</span><br><span class="line">    <span class="keyword">private</span> String level;</span><br><span class="line">    <span class="keyword">private</span> String body;</span><br><span class="line">    <span class="keyword">private</span> String executionTime;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/" title="Kafka 学习之路（二）" target="_blank" rel="external">https://rabbit-mar.github.io/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+  
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: 'Kafka 学习之路（二）',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>

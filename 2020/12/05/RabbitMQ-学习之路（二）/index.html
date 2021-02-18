@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>RabbitMQ 学习之路（二） | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="RabbitMQ 学习之路第二节，RabbitMQ实战、RabbitMQ基础组件封装以及RabbitMQ 安装延迟插件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RabbitMQ 学习之路（二）">
+<meta property="og:url" content="https://rabbit-mar.github.io/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="RabbitMQ 学习之路第二节，RabbitMQ实战、RabbitMQ基础组件封装以及RabbitMQ 安装延迟插件">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picsum.photos/1080/400">
+<meta property="article:published_time" content="2020-12-05T05:20:31.000Z">
+<meta property="article:modified_time" content="2021-02-18T15:02:15.861Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="RabbitMQ">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">34</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/"
+              class="title">分库分表之sharding-jdbc&amp;mycat</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020-12-23</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%94%EF%BC%89%E2%80%94%E2%80%94-%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84/"
+              class="title">Redis学习之路（五）—— 集群架构</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-11T00:02:55.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">Kafka 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:56:18.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%B8%80%EF%BC%89/"
+              class="title">Kafka 学习之路（一）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:54:03.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">RabbitMQ 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-05T05:20:31.000Z" itemprop="datePublished">2020-12-05</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-RabbitMQ-学习之路（二）" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklb01amb0040tv02abah5e6u noopener">
+        <img src="https://picsum.photos/1080/400" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    <div class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      RabbitMQ 学习之路（二）
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/" class="article-date">
+	  <time datetime="2020-12-05T05:20:31.000Z" itemprop="datePublished">2020年12月05日13时</time>
+	</a>
+</span>
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	1.5k(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	5(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/#comments"
+            class="article-comment-link">评论</a></span>
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+      <h2 id="RabbitMQ实战"><a href="#RabbitMQ实战" class="headerlink" title="RabbitMQ实战"></a>RabbitMQ实战</h2><p>RabbitMQ是一个开源的消息代理和队列服务器，用来通过普通协议再完全不同的应用之间共享数据，RabbitMQ是使用Erlang语言来编写的，并且RabbitMQ是基于AMQP协议的。</p>
+<h3 id="哪些大厂在用RabbitMQ"><a href="#哪些大厂在用RabbitMQ" class="headerlink" title="哪些大厂在用RabbitMQ"></a>哪些大厂在用RabbitMQ</h3><p>滴滴、美团、头条、去哪儿、艺龙……</p>
+<ul>
+<li>开源、性能优秀，稳定性保障</li>
+<li>提供可靠性消息投递模式(confirm)，返回模式(return)</li>
+<li>与SpringAMQP完美的整合，API丰富</li>
+<li>集群模式丰富，表达式配置，HA模式，镜像队列模型</li>
+<li>保证数据不丢失的前提做到高可靠性、可用性</li>
+</ul>
+<h3 id="RabbitMQ高性能的原因"><a href="#RabbitMQ高性能的原因" class="headerlink" title="RabbitMQ高性能的原因"></a>RabbitMQ高性能的原因</h3><ul>
+<li>Erlang语言最初在于交换机领域的架构模式，这样使得RabbitMQ在Broker之间进行数据交互的性能是非常优秀的<ul>
+<li>Erlang的优点：Erlang有着和原生Socket一样的延迟</li>
+</ul>
+</li>
+</ul>
+<h3 id="AMQP高级消息队列协议"><a href="#AMQP高级消息队列协议" class="headerlink" title="AMQP高级消息队列协议"></a>AMQP高级消息队列协议</h3><p>AMQP全称：Advanced Message Queuing Protocal</p>
+<p>AMQP翻译：高级消息队列协议</p>
+<p>AMQP定义：是具有现代特征的二进制协议。是一个提供统一消息服务的应用层标准高级消息队列协议，是应用层协议的一个开放标准，为面向消息的中间件设计。</p>
+<h3 id="AMQP协议模型"><a href="#AMQP协议模型" class="headerlink" title="AMQP协议模型"></a>AMQP协议模型</h3><p><img src="/images/2020/12/05/22b5a72d-e6ac-4c20-915b-322c1b033c22.png" alt="1606291866502"></p>
+<h3 id="AMQP核心概念"><a href="#AMQP核心概念" class="headerlink" title="AMQP核心概念"></a>AMQP核心概念</h3><ul>
+<li>Server：又称Broker，接受客户端的连接，实现AMQP实体服务</li>
+<li>Connection：连接，应用程序与Broker的网络连接</li>
+<li>Channel：网络信道，几乎所有的操作都在Channel中进行，Channel时进行消息读写的通道，客户端可建立多个Channel，每个Channel代表一个会话任务。</li>
+<li>Message：消息，服务器和应用程序之间传送的数据，由Properties和Body组成，Properties可以对消息进行修饰，比如消息的优先级、延迟等高级特性；Body则就是消息体内容。</li>
+<li>Virtual host：虚拟地址，用于进行逻辑隔离，最上层的消息路由。一个Vtrtual host里面可以有若干个Exchange和Queue，同一个Virtual host里面不能有相同名称的Exchange或Queue</li>
+<li>Exchange：交换机，接收消息，根据路由键转发消息到绑定的队列</li>
+<li>Binding：Exchange和Queue之间的虚拟连接，Binding中可以包含Routing key</li>
+<li>Routing key：一个路由规则，虚拟机可用他来确定路由一个特定消息</li>
+<li>Queue：也称为Message queue，消息队列，保存消息并将它们转发给消费者</li>
+</ul>
+<h3 id="RabbitMQ的整体架构"><a href="#RabbitMQ的整体架构" class="headerlink" title="RabbitMQ的整体架构"></a>RabbitMQ的整体架构</h3><ol>
+<li>消息由publisher发送给broker中的一个vhost</li>
+<li>由vhost交给指定的Exchange</li>
+<li>再根据消息头中的 <code>路由键</code> 决定发送到哪个Queue中</li>
+<li>消息到达Queue中后，就可以由消费者建立连接（多路复用），从Queue中取出消息</li>
+</ol>
+<p><img src="/images/2020/12/05/20f7e642-fae3-4bf1-845f-0a20cbc7314b.png" alt="1606292529729"></p>
+<h3 id="消息如何保证100-的投递成功"><a href="#消息如何保证100-的投递成功" class="headerlink" title="消息如何保证100%的投递成功"></a>消息如何保证100%的投递成功</h3><h4 id="生产端的可靠性投递"><a href="#生产端的可靠性投递" class="headerlink" title="生产端的可靠性投递"></a>生产端的可靠性投递</h4><ul>
+<li>保障消息的成功发出</li>
+<li>保障MQ节点的成功接收</li>
+<li>发送端收到MQ节点(Broker)确认应答</li>
+<li>完善的消息进行补偿机制</li>
+</ul>
+<h4 id="生产端可靠性投递解决方案"><a href="#生产端可靠性投递解决方案" class="headerlink" title="生产端可靠性投递解决方案"></a>生产端可靠性投递解决方案</h4><ul>
+<li><p>消息落库，对消息状态进行打标</p>
+<p><img src="/images/2020/12/05/0e2dd60a-df22-4f51-8825-1b7633a12f9b.png" alt="1606295072839"></p>
+</li>
+<li><p>消息的延迟投递，做二次确认，回调检查</p>
+<p><img src="/images/2020/12/05/7cd28665-8047-4fae-82e2-a6cc7b3ca16d.png" alt="1606296819948"></p>
+</li>
+</ul>
+<h3 id="幂等性"><a href="#幂等性" class="headerlink" title="幂等性"></a>幂等性</h3><p> 对于同一个系统，在同样条件下，一次请求和重复多次请求对资源的影响是一致的，就称该操作为幂等的。 </p>
+<ul>
+<li><p>MVCC</p>
+<p>借鉴数据库的多版本控制方式来实现数据库的幂等，即在执行SQL的时候，通过Version来控制</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">update t_table <span class="keyword">set</span> <span class="keyword">value</span> <span class="operator">=</span> <span class="keyword">value</span> <span class="operator">+</span> <span class="number">1</span>, version <span class="operator">=</span> version <span class="operator">+</span> <span class="number">1</span> <span class="keyword">where</span> version <span class="operator">=</span> <span class="number">1</span> </span><br></pre></td></tr></table></figure></li>
+<li><p>token</p>
+<p>发起异步请求创建一个唯一的ticketId，就是门票，这张门票只能使用一次就作废，具体步骤如下：</p>
+<ol>
+<li>异步请求获取门票</li>
+<li>调用支付，传入门票</li>
+<li>根据门票ID查询此次操作是否存在，如果存在则表示该操作已经执行过，直接返回结果；如果不存在，执行请求，保存结果</li>
+<li>返回结果到客户端</li>
+</ol>
+<p>如果步骤4通信失败，用户再次发起请求，那么最终结果还是一样的</p>
+</li>
+</ul>
+<h3 id="消费端-幂等性保障"><a href="#消费端-幂等性保障" class="headerlink" title="消费端-幂等性保障"></a>消费端-幂等性保障</h3><h4 id="如何避免消息的重复消费"><a href="#如何避免消息的重复消费" class="headerlink" title="如何避免消息的重复消费"></a>如何避免消息的重复消费</h4><p>消费端实现幂等性，就意味着，我们的消息永远不会消费多次，即使我们收到了多条一样的消息</p>
+<ul>
+<li><p>唯一ID + 指纹码 机制，利用数据库主键去重</p>
+<ul>
+<li>SELECT COUNT(1) FROM t_table WHERE ID = 唯一ID + 指纹码</li>
+<li>好处：实现简单</li>
+<li>坏处：高并发下有数据库写入的性能瓶颈</li>
+<li>解决方案：根据ID进行分库分表进行算法路由</li>
+</ul>
+</li>
+<li><p>利用Redis的原子性去实现</p>
+<p>需要考虑以下问题</p>
+<ul>
+<li>数据是否需要落库，如果落库的话，关键解决的问题是数据库和缓存如何做到原子性</li>
+<li>如果不进行落库，那么都存储到缓存中，如何设置定时同步的策略</li>
+</ul>
+</li>
+</ul>
+<h3 id="RabbitMQ的安装"><a href="#RabbitMQ的安装" class="headerlink" title="RabbitMQ的安装"></a>RabbitMQ的安装</h3><p>官网：<a target="_blank" rel="noopener" href="https://www.rabbitmq.com/install-rpm.html">https://www.rabbitmq.com/install-rpm.html</a></p>
+<h2 id="RabbitMQ基础组件封装"><a href="#RabbitMQ基础组件封装" class="headerlink" title="RabbitMQ基础组件封装"></a>RabbitMQ基础组件封装</h2><h3 id="基础组件实现关键点"><a href="#基础组件实现关键点" class="headerlink" title="基础组件实现关键点"></a>基础组件实现关键点</h3><ul>
+<li>MQ组件实现思路和架构设计方案</li>
+<li>基础组件封装设计 - 迅速消息发送</li>
+<li>基础组件封装设计 - 确认消息发送</li>
+<li>基础组件封装设计 - 延迟消息发送</li>
+</ul>
+<h3 id="基础组件实现的功能点"><a href="#基础组件实现的功能点" class="headerlink" title="基础组件实现的功能点"></a>基础组件实现的功能点</h3><ul>
+<li>迅速、延迟、可靠</li>
+<li>消息异步化、序列化</li>
+<li>连接池化、高性能</li>
+<li>完备的补偿机制</li>
+</ul>
+<h3 id="基础组件模块划分"><a href="#基础组件模块划分" class="headerlink" title="基础组件模块划分"></a>基础组件模块划分</h3><p>— rabbit-parent<br>​    | — rabbit-api<br>​    | — rabbit-common<br>​    | — rabbit-core-producer<br>​    | — rabbit-task</p>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><p>见Gitee：<a target="_blank" rel="noopener" href="https://gitee.com/marveal_admin/rabbit-parent">https://gitee.com/marveal_admin/rabbit-parent</a></p>
+<h2 id="RabbitMQ-安装延迟插件"><a href="#RabbitMQ-安装延迟插件" class="headerlink" title="RabbitMQ 安装延迟插件"></a>RabbitMQ 安装延迟插件</h2><h4 id="安装包方式安装"><a href="#安装包方式安装" class="headerlink" title="安装包方式安装"></a>安装包方式安装</h4><ol>
+<li>插件的下载地址：<a target="_blank" rel="noopener" href="https://www.rabbitmq.com/community-plugins.html%EF%BC%8C%E4%B8%8B%E8%BD%BD">https://www.rabbitmq.com/community-plugins.html，下载</a> <strong><code>rabbitmq_delayed_message_exchange</code></strong> 插件</li>
+<li>放置到rabbitmq安装目录下得plugins目录下</li>
+</ol>
+<h4 id="docker方式安装"><a href="#docker方式安装" class="headerlink" title="docker方式安装"></a>docker方式安装</h4><ol>
+<li><p>同上，先下载插件</p>
+</li>
+<li><p>拷贝插件到rabbitmq容器的 <code>/plugins</code> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker cp rabbitmq_delayed_message_exchange-&lt;version&gt;.ez rabbitmq:/plugins</span><br></pre></td></tr></table></figure></li>
+<li><p>重新授权rabbitmq用户</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 进入容器启用插件</span></span><br><span class="line">docker exec -it rabbitmq /bin/bash</span><br><span class="line">chown -R rabbitmq:rabbitmq rabbitmq_delayed_message_exchange-&lt;version&gt;.ez</span><br></pre></td></tr></table></figure>
+<h4 id="启动延迟插件"><a href="#启动延迟插件" class="headerlink" title="启动延迟插件"></a>启动延迟插件</h4></li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rabbitmq-plugins enable rabbitmq_delayed_message_exchange</span><br></pre></td></tr></table></figure>
+<p>重启rabbitmq服务完成安装</p>
+<h4 id="添加一个延迟消息Exchange"><a href="#添加一个延迟消息Exchange" class="headerlink" title="添加一个延迟消息Exchange"></a>添加一个延迟消息Exchange</h4><p>设置type为x-delay-message，必须添加参数 <code>x-delayed-type</code> 为 <code>topic</code></p>
+<p><img src="/images/2020/12/05/ad5322b3-b499-4143-a35e-f32f2748397c.png" alt="1606917842679"></p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/" title="RabbitMQ 学习之路（二）" target="_blank" rel="external">https://rabbit-mar.github.io/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+  
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: 'RabbitMQ 学习之路（二）',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Springboot集成Redis实现定时任务Key消失问题 | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="记录一次本博客网站Redis问题: 使用Redis键空间事件做定时任务，运行过程中key消失问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Springboot集成Redis实现定时任务Key消失问题">
+<meta property="og:url" content="https://rabbit-mar.github.io/2020/05/19/Springboot%E9%9B%86%E6%88%90Redis%E5%AE%9E%E7%8E%B0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1Key%E6%B6%88%E5%A4%B1%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="记录一次本博客网站Redis问题: 使用Redis键空间事件做定时任务，运行过程中key消失问题">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picsum.photos/1080/400">
+<meta property="article:published_time" content="2020-05-18T23:49:04.000Z">
+<meta property="article:modified_time" content="2021-02-18T14:01:52.164Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="SpringBoot">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2020/05/19/Springboot%E9%9B%86%E6%88%90Redis%E5%AE%9E%E7%8E%B0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1Key%E6%B6%88%E5%A4%B1%E9%97%AE%E9%A2%98/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">34</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/"
+              class="title">分库分表之sharding-jdbc&amp;mycat</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020-12-23</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%94%EF%BC%89%E2%80%94%E2%80%94-%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84/"
+              class="title">Redis学习之路（五）—— 集群架构</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-11T00:02:55.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">Kafka 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:56:18.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%B8%80%EF%BC%89/"
+              class="title">Kafka 学习之路（一）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:54:03.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">RabbitMQ 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-05T05:20:31.000Z" itemprop="datePublished">2020-12-05</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Springboot集成Redis实现定时任务Key消失问题" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklb01al5000utv02fu7s17n6 noopener">
+        <img src="https://picsum.photos/1080/400" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    <div class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      Springboot集成Redis实现定时任务Key消失问题
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/05/19/Springboot%E9%9B%86%E6%88%90Redis%E5%AE%9E%E7%8E%B0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1Key%E6%B6%88%E5%A4%B1%E9%97%AE%E9%A2%98/" class="article-date">
+	  <time datetime="2020-05-18T23:49:04.000Z" itemprop="datePublished">2020年05月19日07时</time>
+	</a>
+</span>
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Redis/" rel="tag">Redis</a>, <a class="article-tag-link-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	1.5k(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	6(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/05/19/Springboot%E9%9B%86%E6%88%90Redis%E5%AE%9E%E7%8E%B0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1Key%E6%B6%88%E5%A4%B1%E9%97%AE%E9%A2%98/#comments"
+            class="article-comment-link">评论</a></span>
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+      <h1 id="SpringBoot集成Redis-Key消失问题"><a href="#SpringBoot集成Redis-Key消失问题" class="headerlink" title="SpringBoot集成Redis Key消失问题"></a>SpringBoot集成Redis Key消失问题</h1><h2 id="Springboot集成Redis步骤"><a href="#Springboot集成Redis步骤" class="headerlink" title="Springboot集成Redis步骤"></a>Springboot集成Redis步骤</h2><h3 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h3><p>参考网站<a target="_blank" rel="noopener" href="https://redis.io/topics/notifications" title="Redis官网">Redis官网键空间通知</a><br>官网中介绍了其准备工作  </p>
+<h4 id="先将redis-conf文件中的notify-keyspace-events改为KEA"><a href="#先将redis-conf文件中的notify-keyspace-events改为KEA" class="headerlink" title="先将redis.conf文件中的notify-keyspace-events改为KEA"></a>先将redis.conf文件中的notify-keyspace-events改为KEA</h4><blockquote>
+<p>notify-keyspace-events KEA</p>
+</blockquote>
+<p>官网中有对KEA三个参数进行了解释，redis.conf文件中也有介绍  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">K     Keyspace events, published with __keyspace@&lt;db&gt;__ prefix.</span><br><span class="line">E     Keyevent events, published with __keyevent@&lt;db&gt;__ prefix.</span><br><span class="line">g     Generic commands (non-type specific) like DEL, EXPIRE, RENAME, ...</span><br><span class="line">$     String commands</span><br><span class="line">l     List commands</span><br><span class="line">s     Set commands</span><br><span class="line">h     Hash commands</span><br><span class="line">z     Sorted set commands</span><br><span class="line">t     Stream commands</span><br><span class="line">x     Expired events (events generated every time a key expires)</span><br><span class="line">e     Evicted events (events generated when a key is evicted for maxmemory)</span><br><span class="line">A     Alias for g$lshztxe, so that the &quot;AKE&quot; string means all the events.</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>字符串中至少应存在K或E，否则字符串将不传递任何事件。</p>
+<p>例如，仅启用列表的键空间事件，必须将配置参数设置为Kl，依此类推。</p>
+<p>该字符串KEA可用于启用每个可能的事件。</p>
+</blockquote>
+<h4 id="在redis-cli中查看是否生效"><a href="#在redis-cli中查看是否生效" class="headerlink" title="在redis-cli中查看是否生效"></a>在redis-cli中查看是否生效</h4><blockquote>
+<p>$ redis-cli config get notify-keyspace-events</p>
+</blockquote>
+<p>在终端输入psubscribe __keyevent@0__:expired 订阅一个键失效事件  </p>
+<blockquote>
+<p>psubscribe __keyevent@0__:expired</p>
+</blockquote>
+<p>在另一个终端中设置一个key过期时间为10s可以看到第一个终端产生反应  </p>
+<p>第二个终端  </p>
+<blockquote>
+<p>set test t1 ex 10  </p>
+</blockquote>
+<p>第一个终端  </p>
+<blockquote>
+<p>1)”pmessage”<br>2)”__keyevent@0__:expired”<br>3)”__keyevent@0__:expired”<br>4)”test”  </p>
+</blockquote>
+<h3 id="在SpringBoot中导入Redis配置"><a href="#在SpringBoot中导入Redis配置" class="headerlink" title="在SpringBoot中导入Redis配置"></a>在SpringBoot中导入Redis配置</h3><h4 id="在pom-xml中引入Redis"><a href="#在pom-xml中引入Redis" class="headerlink" title="在pom.xml中引入Redis"></a>在pom.xml中引入Redis</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-data-redis<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="编写订阅事件"><a href="#编写订阅事件" class="headerlink" title="编写订阅事件"></a>编写订阅事件</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// RedisConfig.java</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * key失效通知事件</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> connectionFactory</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> listenerAdapter</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">	<span class="meta">@Bean</span></span><br><span class="line">	<span class="function">RedisMessageListenerContainer <span class="title">container</span><span class="params">(RedisConnectionFactory connectionFactory, MessageListenerAdapter listenerAdapter)</span> </span>&#123;</span><br><span class="line">		RedisMessageListenerContainer container = <span class="keyword">new</span> RedisMessageListenerContainer();</span><br><span class="line">		container.setConnectionFactory(connectionFactory);</span><br><span class="line">		container.addMessageListener(listenerAdapter, <span class="keyword">new</span> PatternTopic(<span class="string">&quot;__keyevent@0__:expired&quot;</span>));</span><br><span class="line">		<span class="keyword">return</span> container;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 失效监听方法</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> receiver</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">	<span class="meta">@Bean</span></span><br><span class="line">	<span class="function">MessageListenerAdapter <span class="title">listenerAdapter</span><span class="params">(RedisMessageReceiver receiver)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> MessageListenerAdapter(receiver, <span class="string">&quot;receiveMessage&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>再写一个处理监听的方法</strong>   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// RedisMessageReceiver.java</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisMessageReceiver</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 键失效监听方法</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> message key</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">receiveMessage</span><span class="params">(String message)</span> </span>&#123;</span><br><span class="line">		<span class="comment">// 这个message就是key</span></span><br><span class="line">		System.out.println(message);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>然后在项目启动时给Redis中进行设值</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InitCache</span> <span class="keyword">implements</span> <span class="title">ApplicationRunner</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Resource</span></span><br><span class="line">	<span class="keyword">private</span> RedisUtil redisUtil;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">(ApplicationArguments args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">		<span class="comment">// 使用RedisUtil设置值</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="问题产生"><a href="#问题产生" class="headerlink" title="问题产生"></a>问题产生</h2><p>当我在<code>RedisMessageReceiver</code>这个类中调用<code>receiveMessage</code>方法时，会处理我的业务逻辑。  </p>
+<p>如下面这个业务员逻辑，当我的观看量和点赞量写入数据库中   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">dealBlogLookLike</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="comment">// 获取匹配的key</span></span><br><span class="line">	Set&lt;String&gt; keys = redisUtil.scan(<span class="string">&quot;blog::*&quot;</span>);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 如果不为null并且size大于0 就执行下面的逻辑</span></span><br><span class="line">	<span class="keyword">if</span> (keys != <span class="keyword">null</span> &amp;&amp; keys.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="comment">// 创建一个list,将要更新的数据放在里面，然后数据库批量更新</span></span><br><span class="line">		List&lt;BlogLookLikeDto&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">		<span class="comment">// 循环遍历key</span></span><br><span class="line">		<span class="keyword">for</span> (String key : keys) &#123;</span><br><span class="line">			<span class="comment">// 拿到需要的数据</span></span><br><span class="line">			Integer look = (Integer) redisUtil.hget(key, <span class="string">&quot;look&quot;</span>);</span><br><span class="line">			Integer like = (Integer) redisUtil.hget(key, <span class="string">&quot;like&quot;</span>);</span><br><span class="line">			<span class="comment">// 存入到对象里面</span></span><br><span class="line">			BlogLookLikeDto blog = <span class="keyword">new</span> BlogLookLikeDto();</span><br><span class="line">			blog.setId(Integer.valueOf(key.substring(<span class="number">6</span>)));</span><br><span class="line">			blog.setLook(look);</span><br><span class="line">			blog.setLike(like);</span><br><span class="line">			list.add(blog);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 批量刷入到数据库</span></span><br><span class="line">		<span class="keyword">int</span> res = blogDao.updateBlogLookLike(list);</span><br><span class="line">		<span class="comment">// 如果更新没失败就删除值</span></span><br><span class="line">		<span class="keyword">if</span> (res == keys.size()) &#123;</span><br><span class="line">			redisUtil.del(keys);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 最后重新定时</span></span><br><span class="line">	redisUtil.set(<span class="string">&quot;blog:looklike:timmer&quot;</span>, <span class="string">&quot;博文刷新观看数点赞数定时器&quot;</span>, Constants.BLOG_LOOK_LIKE_TIME_INTERVAL);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>自我认为代码逻辑没有问题，但是在执行这个键空间事件通知的时候，会执行以下的代码，但是某一天发现我的访问没有刷入到数据库<br>然后打开本地的数据进行复现，将<code>Constants.BLOG_LOOK_LIKE_TIME_INTERVAL</code>更改为10S刷一次,发现问题所在  </p>
+<p>以下是复现  </p>
+<p>打开一个键失效监听，可以发现在第三次之后应该为<code>&quot;blog:looklike:timmer&quot;</code>键失效  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; PSUBSCRIBE __keyevent@0__:expired</span><br><span class="line">Reading messages... (press Ctrl-C to quit)</span><br><span class="line">1) &quot;psubscribe&quot;</span><br><span class="line">2) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">3) (integer) 1</span><br><span class="line">1) &quot;pmessage&quot;</span><br><span class="line">2) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">3) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">4) &quot;web::viewer&quot;</span><br><span class="line">1) &quot;pmessage&quot;</span><br><span class="line">2) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">3) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">4) &quot;blog:looklike:timmer&quot;</span><br><span class="line">1) &quot;pmessage&quot;</span><br><span class="line">2) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">3) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">4) &quot;web::viewer&quot;</span><br><span class="line">1) &quot;pmessage&quot;</span><br><span class="line">2) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">3) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">4) &quot;web::viewer&quot;</span><br><span class="line">1) &quot;pmessage&quot;</span><br><span class="line">2) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">3) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">4) &quot;web::viewer&quot;</span><br><span class="line">1) &quot;pmessage&quot;</span><br><span class="line">2) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">3) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">4) &quot;web::viewer&quot;</span><br><span class="line">1) &quot;pmessage&quot;</span><br><span class="line">2) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">3) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">4) &quot;web::viewer&quot;</span><br><span class="line">1) &quot;pmessage&quot;</span><br><span class="line">2) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">3) &quot;__keyevent@0__:expired&quot;</span><br><span class="line">4) &quot;web::viewer&quot;</span><br></pre></td></tr></table></figure>
+<p>在另一个redis-cli中查看keys的数据  </p>
+<p>发现<code>&quot;blog:looklike:timmer&quot;</code>和<code>&quot;web::viewer&quot;</code>的消失  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; keys *</span><br><span class="line">1) &quot;web::viewer&quot;</span><br><span class="line">2) &quot;blog:looklike:timmer&quot;</span><br><span class="line">3) &quot;web::views&quot;</span><br><span class="line">127.0.0.1:6379&gt; keys *</span><br><span class="line">1) &quot;web::viewer&quot;</span><br><span class="line">2) &quot;web::views&quot;</span><br><span class="line">127.0.0.1:6379&gt; keys *</span><br><span class="line">1) &quot;web::views&quot;</span><br><span class="line">127.0.0.1:6379&gt; keys *</span><br><span class="line">1) &quot;web::views&quot;</span><br><span class="line">127.0.0.1:6379&gt;</span><br></pre></td></tr></table></figure>
+<p>回到Redis终端发现为redis命令超时错误   </p>
+<blockquote>
+<p>Caused by: io.lettuce.core.RedisCommandTimeoutException: Command timed out</p>
+</blockquote>
+<p>这个问题很好解决，只需要调大配置文件中redis超时时间就可以了  </p>
+<blockquote>
+<p>spring.redis.timeout: 1000</p>
+</blockquote>
+<p>但是追踪溯源为何导致了key的消失<br>原来的键空间处理事件中执行<code>dealBlogLookLike()</code>方法时，这其中内部的命令如果超时的话会直接抛出异常，将方法弹出栈  </p>
+<p>其实解决办法还可以通过catch下来，自定义一个异常处理，但是我没选择这个方法的原因有两点:   </p>
+<ol>
+<li>如何保证catch下来的，自定义异常处理中关于Redis的操作一定超时呢，这是没办法保证的。  </li>
+<li>自定义异常处理会带来一些其他的问题，例如针对单个key如何进行个性化处理。随着后面业务的拓展，个性化代码变得冗余，更加不好维护。</li>
+</ol>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>这次线上问题主要是分享SpringBoot整合Redis实现定时任务，正好趁这次事件编辑这篇博文。</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2020/05/19/Springboot%E9%9B%86%E6%88%90Redis%E5%AE%9E%E7%8E%B0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1Key%E6%B6%88%E5%A4%B1%E9%97%AE%E9%A2%98/" title="Springboot集成Redis实现定时任务Key消失问题" target="_blank" rel="external">https://rabbit-mar.github.io/2020/05/19/Springboot%E9%9B%86%E6%88%90Redis%E5%AE%9E%E7%8E%B0%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1Key%E6%B6%88%E5%A4%B1%E9%97%AE%E9%A2%98/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+  
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: 'Springboot集成Redis实现定时任务Key消失问题',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>

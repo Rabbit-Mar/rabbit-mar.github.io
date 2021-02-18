@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Redis学习之路(二)——Redis五大数据类型 | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="整理Redis五大数据类型以及使用部分场景">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis学习之路(二)——Redis五大数据类型">
+<meta property="og:url" content="https://rabbit-mar.github.io/2020/05/17/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%BA%8C)%E2%80%94%E2%80%94Redis%E4%BA%94%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="整理Redis五大数据类型以及使用部分场景">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picsum.photos/1080/400">
+<meta property="article:published_time" content="2020-05-17T07:52:50.000Z">
+<meta property="article:modified_time" content="2021-02-18T13:52:07.978Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2020/05/17/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%BA%8C)%E2%80%94%E2%80%94Redis%E4%BA%94%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">34</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/"
+              class="title">分库分表之sharding-jdbc&amp;mycat</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020-12-23</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%94%EF%BC%89%E2%80%94%E2%80%94-%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84/"
+              class="title">Redis学习之路（五）—— 集群架构</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-11T00:02:55.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">Kafka 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:56:18.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%B8%80%EF%BC%89/"
+              class="title">Kafka 学习之路（一）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:54:03.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">RabbitMQ 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-05T05:20:31.000Z" itemprop="datePublished">2020-12-05</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Redis学习之路(二)——Redis五大数据类型" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklb01ako0001tv02cyhy1bxv noopener">
+        <img src="https://picsum.photos/1080/400" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    <div class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      Redis学习之路(二)——Redis五大数据类型
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/05/17/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%BA%8C)%E2%80%94%E2%80%94Redis%E4%BA%94%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/" class="article-date">
+	  <time datetime="2020-05-17T07:52:50.000Z" itemprop="datePublished">2020年05月17日15时</time>
+	</a>
+</span>
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Redis/" rel="tag">Redis</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	2.4k(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	11(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/05/17/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%BA%8C)%E2%80%94%E2%80%94Redis%E4%BA%94%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/#comments"
+            class="article-comment-link">评论</a></span>
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+      <h1 id="五大基本数据类型及其使用场景"><a href="#五大基本数据类型及其使用场景" class="headerlink" title="五大基本数据类型及其使用场景"></a>五大基本数据类型及其使用场景</h1><h2 id="string"><a href="#string" class="headerlink" title="string"></a>string</h2><h3 id="1-字符串操作"><a href="#1-字符串操作" class="headerlink" title="1. 字符串操作"></a>1. 字符串操作</h3><p><strong>set key value</strong> 新增一个key  </p>
+<p><strong>append key value</strong>  在一个key后面追加一个value  </p>
+<p><strong>strlen key</strong>   key所对的value的长处  </p>
+<blockquote>
+<p><strong>中文字符在redis中根据编码来定</strong><br><strong>例如一个‘中’字，在utf-8的编码情况下得到的长度为3</strong><br>例：<br>127.0.0.1:6379&gt; set k1 中<br>OK<br>127.0.0.1:6379&gt; STRLEN k1<br>(integer) 3  </p>
+<p><strong>在gbk的编码集下，长度为2</strong><br>例：<br>127.0.0.1:6379&gt; set k2 中<br>OK<br>127.0.0.1:6379&gt; strlen k2<br>(integer) 2  </p>
+</blockquote>
+<h3 id="2-数值计算"><a href="#2-数值计算" class="headerlink" title="2. 数值计算"></a>2. 数值计算</h3><p><strong>incr key</strong>  让一个数字性的value自增1  </p>
+<blockquote>
+<p><strong>如果说value为一个数值类型，例如为9，则它的长度为1；为10，则他的长度为2；为100，则它的长度为3</strong><br>127.0.0.1:6379&gt; set k3 9<br>OK<br>127.0.0.1:6379&gt; strlen k3<br>(integer) 1<br>127.0.0.1:6379&gt; set k3 10<br>OK<br>127.0.0.1:6379&gt; STRlen k3<br>(integer) 2<br>127.0.0.1:6379&gt; set k3 100<br>OK<br>127.0.0.1:6379&gt; strlen k3<br>(integer) 3  </p>
+<p><strong>由此可知，数值类型的长度相当于数值转换为字符串的长度</strong>  </p>
+<p><strong>原因是因为redis是一个二进制安全的，就是由数据发送方和数据接收方已经商量好数据编解码，而作为中间组件，把他们的数据序列化时都当作byte[]类型进行处理</strong></p>
+</blockquote>
+<h3 id="3-位操作"><a href="#3-位操作" class="headerlink" title="3. 位操作"></a>3. 位操作</h3><blockquote>
+<p>bitmap(位图)</p>
+</blockquote>
+<p><strong>setbit key offset value</strong>  设置二进制位</p>
+<blockquote>
+<p>例如 ： setbit  k1  1  1<br><strong>在内存中就是开辟一个字节的空间</strong><br><strong>空间    0   0   0   0   0   0   0   0</strong><br><strong>offset  0   1   2   3   4   5   6   7</strong><br><strong>这个命令就是将offset为1的位置设置为1</strong><br><strong>结果    0   1   0   0   0   0   0   0</strong><br><strong>这个结果在ascii码中对应的是十进制64号字符‘@’（在linux中执行man ascii可以看到ascii表对应的8进制、10进制、16进制）</strong><br><strong>如果offset超过了7，则redis会再开辟空间，直到offset能够放下</strong><br>例如 offset   k2    9999     1<br>127.0.0.1:6379&gt; setbit k2 9999 1<br>(integer) 0<br>127.0.0.1:6379&gt; strlen k2<br>(integer) 1250  </p>
+<p>*<em>可以计算到一个字节八位 ，1250</em>8=10000 = 9999+1 ，凑成整数个字节**<br><strong>如果说设置一个字节的最高位为1，则有可能无法识别</strong><br><strong>当被ascii字符集识别时，最高位无用，所以在setbit后无法识别</strong><br>例如 0100 0000 1000 0000<br>127.0.0.1:6379&gt; setbit k3 1 1<br>(integer) 0<br>127.0.0.1:6379&gt; setbit k3 8 1<br>(integer) 0<br>127.0.0.1:6379&gt; get k3<br>“@\x80”  </p>
+<p><strong>如果说key正好符合各种字符集，则会被设别为对应字符集的值</strong><br><strong>可以用man utf-8命令查看utf-8的字符集规则</strong>  </p>
+</blockquote>
+<p><strong>man ascii</strong></p>
+<p><img src="/images/2020/05/17/4f653bcb-d55f-4d61-a46d-fd8b85ac0428.png"></p>
+<p><strong>man utf-8</strong></p>
+<p><img src="/images/2020/05/17/6f0e0b11-cfe7-4787-ae10-f603c701b207.png"></p>
+<p><strong>bitcount key start end</strong>   计算从开始字节到结束字节有多少个1，默认统计全部  </p>
+<blockquote>
+<p>例如： bitcount k3<br>127.0.0.1:6379&gt; BITCOUNT k3<br>(integer) 2<br><strong>这个双向的同样可以统计 0  -1 从0到最后一个字节1的个数</strong><br>例如：<br>127.0.0.1:6379&gt; setbit k3 20 1<br>(integer) 0<br>127.0.0.1:6379&gt; BITCOUNT k3 0 -1<br>(integer) 3  </p>
+</blockquote>
+<p><img src="/images/2020/05/17/a658a944-de3c-4e82-9f71-ca5cd84a02bb.png"></p>
+<p><strong>bitop operation destkey key..</strong>   位操作，操作类型可以是and、or，结果key是destkey  </p>
+<blockquote>
+<p>例如<br>127.0.0.1:6379&gt; setbit k1 7 1<br>(integer) 0<br>127.0.0.1:6379&gt; setbit k1 1 1<br>(integer) 0<br>127.0.0.1:6379&gt; setbit k2 1 1<br>(integer) 0<br>127.0.0.1:6379&gt; setbit k2 6 1<br>(integer) 0<br>127.0.0.1:6379&gt; get k1<br>“A”<br>127.0.0.1:6379&gt; get k2<br>“B”  </p>
+<p><strong>k1: 0 1 0 0 0 0 0 1</strong>  </p>
+<p><strong>k2: 0 1 0 0 0 0 1 0</strong>  </p>
+<p>127.0.0.1:6379&gt; bitop and andkey k1 k2<br>(integer) 1<br>127.0.0.1:6379&gt; get andkey<br>“@”  </p>
+<p><strong>andkey: 0 1 0 0 0 0 0 0</strong>  </p>
+<p>127.0.0.1:6379&gt; bitop or orkey k1 k2<br>(integer) 1<br>127.0.0.1:6379&gt; get orkey<br>“C”  </p>
+<p><strong>orkey: 0 1 0 0 0 0 1 1</strong>  </p>
+</blockquote>
+<h3 id="4-应用场景"><a href="#4-应用场景" class="headerlink" title="4. 应用场景"></a>4. 应用场景</h3><p>string: session 、 kv缓存、数值计算、fs文件系统（将一个小文件存放在内存里，key为文件名，value为文件内容）、内存  </p>
+<p><code>二进制： 统计任意时间窗口一个用户的登陆情况、在活动期间用户的注册数或者活跃用户数</code>  </p>
+<blockquote>
+<p><strong>1、设置key为用户名  每一个bit就代表一天，当天登陆就设置为1</strong></p>
+<p>例如</p>
+<p>127.0.0.1:6379&gt; SETBIT zs 1 1<br>(integer) 0<br>127.0.0.1:6379&gt; SETBIT zs 2 1<br>(integer) 0<br>127.0.0.1:6379&gt; SETBIT zs 364 1<br>(integer) 0<br>127.0.0.1:6379&gt; BITCOUNT zs<br>(integer) 3  </p>
+<p><strong>2、设置日期为key，第几号用户登陆过就设置为1</strong></p>
+<p>例如 ：</p>
+<p>127.0.0.1:6379&gt; setbit 20200101 3 1<br>(integer) 0<br>127.0.0.1:6379&gt; setbit 20200101 8 1<br>(integer) 0  </p>
+<p><strong>在2020年1月1号这天3号用户和8号用户登陆过</strong></p>
+<p>127.0.0.1:6379&gt; setbit 20200102 3 1<br>(integer) 0<br>127.0.0.1:6379&gt; setbit 20200102 10 1<br>(integer) 0  </p>
+<p><strong>在2020年1月2号这天3号用户和10号用户登陆过</strong></p>
+<p>127.0.0.1:6379&gt; bitop or res 20200101 20200102<br>(integer) 2  </p>
+<p>127.0.0.1:6379&gt; BITCOUNT res<br>(integer) 3  </p>
+<p><strong>进行或运算就可以知道这两天有多少个活跃用户</strong></p>
+</blockquote>
+<h2 id="list"><a href="#list" class="headerlink" title="list"></a>list</h2><h3 id="1-本质是一个双向链表"><a href="#1-本质是一个双向链表" class="headerlink" title="1. 本质是一个双向链表"></a>1. 本质是一个双向链表</h3><p>key指向链表的头部和尾部，所以redis的list类型可以双向操作，顺序为放入顺序</p>
+<p><img src="/images/2020/05/18/d4b94930-260b-4ba7-98f8-0dca70a9ce1a.png"></p>
+<h3 id="2-操作"><a href="#2-操作" class="headerlink" title="2. 操作"></a>2. 操作</h3><p><strong>lpush key a b c d e</strong>   从左边压入数据,实际内存中为edcba<br><strong>LRANGE key  start  end</strong>   正序遍历list从start到end  </p>
+<blockquote>
+<p>127.0.0.1:6379&gt; lpush k1 a b c d e<br>(integer) 5  </p>
+<p>127.0.0.1:6379&gt; LRANGE k1 0 -1<br>1)”e”<br>2)”d”<br>3)”c”<br>4)”b”<br>5)”a”  </p>
+</blockquote>
+<p><strong>rpush key x y z</strong>  从右边压入数据,在内存中为 xyz</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; RPUSH k1 x y z<br>(integer) 8<br>127.0.0.1:6379&gt; LRANGE k1 0 -1<br>1)”e”<br>2)”d”<br>3)”c”<br>4)”b”<br>5)”a”<br>6)”x”<br>7)”y”<br>8)”z”  </p>
+</blockquote>
+<p><strong>lpop key</strong>  从左边弹出数据<br><strong>rpop key</strong>  从右边弹出数据</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; lpop k1<br>“e”<br>127.0.0.1:6379&gt; rpop k1<br>“z”  </p>
+</blockquote>
+<p><strong>lindex key index</strong>  获取从左边数下标为index的值</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; lindex k1 1<br>“c”  </p>
+</blockquote>
+<p><strong>ltrim key  start  end</strong>   删除start之前end之后的数据</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; LTRIM k1 0 -2<br>OK  </p>
+<p>127.0.0.1:6379&gt; LRANGE k1 0 -1<br>1)”d”<br>2)”c”<br>3)”b”<br>4)”a”<br>5)”x”  </p>
+</blockquote>
+<h3 id="3-应用场景"><a href="#3-应用场景" class="headerlink" title="3. 应用场景"></a>3. 应用场景</h3><p>消息队列、评论、替代</p>
+<p><code>替代Java的一些容器可以让jvm无状态,当jvm宕机的情况下，redis中可以拿到数据。高并发情况下访问同一个redis，让数据共享，服务无状态</code></p>
+<h2 id="hash"><a href="#hash" class="headerlink" title="hash"></a>hash</h2><h3 id="1-hash本质是hashMap"><a href="#1-hash本质是hashMap" class="headerlink" title="1. hash本质是hashMap"></a>1. hash本质是hashMap</h3><p>HashMap本质是HashTable，主要体现出分治思想</p>
+<h3 id="2-操作-1"><a href="#2-操作-1" class="headerlink" title="2. 操作"></a>2. 操作</h3><p>hset key field name   设置一个名key的hash，键为field，值为value</p>
+<p>**hgetall  key **  获取key的键和值</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; HSet k1 name 123<br>(integer) 1<br>127.0.0.1:6379&gt; hset k1 age 17<br>(integer) 1<br>127.0.0.1:6379&gt; hgetall k1<br>1)”name”<br>2)”123”<br>3)”age”<br>4)”17”  </p>
+</blockquote>
+<p><strong>hkeys key</strong>  获取key的键</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; hkeys k1<br>1)”name”<br>2)”age”  </p>
+</blockquote>
+<p><strong>hvals key</strong>  获取key的值</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; hvals k1<br>1)”123”<br>2)”17”  </p>
+</blockquote>
+<p><strong>hincrby  key  field  value</strong>  让key的键为field的增加value，value可以为负数</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; HINCRBY k1 age 1<br>(integer) 18<br>127.0.0.1:6379&gt; HINCRBY k1 age -1<br>(integer) 17</p>
+</blockquote>
+<h3 id="3-使用场景"><a href="#3-使用场景" class="headerlink" title="3. 使用场景"></a>3. 使用场景</h3><p>聚集数据，详情页</p>
+<h2 id="set"><a href="#set" class="headerlink" title="set"></a>set</h2><h3 id="1-集合，无序不重复，set底层是hashset"><a href="#1-集合，无序不重复，set底层是hashset" class="headerlink" title="1. 集合，无序不重复，set底层是hashset"></a>1. 集合，无序不重复，set底层是hashset</h3><p>hashset底层是hashmap，value为null，且去重。效率低，阻塞后边操作</p>
+<h3 id="2-操作-2"><a href="#2-操作-2" class="headerlink" title="2. 操作"></a>2. 操作</h3><p><strong>sadd key member….</strong>   添加集合</p>
+<p><strong>smembers key</strong>  取出所有集合</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; clear<br>127.0.0.1:6379&gt; Sadd k1 1122 2211 1212 2121 1221 2112 1122<br>(integer) 6<br>127.0.0.1:6379&gt; SMEMBERS k1<br>1)”1122”<br>2)”1212”<br>3)”1221”<br>4)”2112”<br>5)”2121”<br>6)”2211”  </p>
+</blockquote>
+<p><strong>srandmember key count</strong>   返回多少个值，如果是正值且小于总数可以返回乱序且不重复的元素；如果是正值且大于总数，则返回总的元素；如果是负数，则返回count个可重复的元素。</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; SRANDMEMBER k1 3<br>1)”1122”<br>2)”1221”<br>3)”2121”<br>127.0.0.1:6379&gt; SRANDMEMBER k1 10<br>1)”1122”<br>2)”1212”<br>3)”1221”<br>4)”2112”<br>5)”2121”<br>6)”2211”<br>127.0.0.1:6379&gt; SRANDMEMBER k1 -5<br>1)”1212”<br>2)”2112”<br>3)”2211”<br>4)”2112”<br>5)”1212”<br>127.0.0.1:6379&gt; SRANDMEMBER k1 -10<br>1)”2211”<br>2)”1221”<br>3)”1212”<br>4)”1221”<br>5)”1212”<br>6)”1221”<br>7)”1221”<br>8)”2211”<br>9)”2112”<br>10)”2211”  </p>
+</blockquote>
+<p><strong>spop key</strong>   随机弹出一个值</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; spop k1<br>“1221”<br>127.0.0.1:6379&gt; spop k1<br>“1122”<br>127.0.0.1:6379&gt; spop k1<br>“2121”<br>127.0.0.1:6379&gt; spop k1<br>“2112”<br>127.0.0.1:6379&gt; spop k1<br>“2211”<br>127.0.0.1:6379&gt; spop k1<br>“1212”<br>127.0.0.1:6379&gt; spop k1<br>(nil)  </p>
+</blockquote>
+<p><strong>sunion key…</strong>   返回总的集合且去重</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; sadd k1 a b c d e<br>(integer) 5<br>127.0.0.1:6379&gt; sadd k2 d e f<br>(integer) 3<br>127.0.0.1:6379&gt; SUNION k1 k2<br>1)”d”<br>2)”a”<br>3)”c”<br>4)”b”<br>5)”e”<br>6)”f”  </p>
+</blockquote>
+<p><strong>sinter key…</strong>  返回交集</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; SINTER k1 k2<br>1)”e”<br>2)”d”  </p>
+</blockquote>
+<p><strong>sdiff key…</strong>   返回以第一个key为准的差集</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; SDIFF k1 k2<br>1)”a”<br>2)”b”<br>3)”c”<br>127.0.0.1:6379&gt; SDIFF k2 k1<br>1)”f”  </p>
+</blockquote>
+<h3 id="3-使用场景-1"><a href="#3-使用场景-1" class="headerlink" title="3. 使用场景"></a>3. 使用场景</h3><p>集合交并差集、随机时间、抽奖、验证码、扑克牌游戏、好友推荐</p>
+<h2 id="sorted-set-Zset"><a href="#sorted-set-Zset" class="headerlink" title="sorted set (Zset)"></a>sorted set (Zset)</h2><h3 id="1-有序集合、去重、排序"><a href="#1-有序集合、去重、排序" class="headerlink" title="1. 有序集合、去重、排序"></a>1. 有序集合、去重、排序</h3><p>通过score进行排序，如果score相同则进行ascii字典表进行排序。还有一个rank，是排序后的排名即rank。同样有正序倒序。</p>
+<h3 id="2-操作-3"><a href="#2-操作-3" class="headerlink" title="2. 操作"></a>2. 操作</h3><p><strong>zadd key score value</strong>   新建一个有序集合</p>
+<p><strong>zrange key start end withscores</strong>  从start到end取出有序集合（通过score排序） </p>
+<blockquote>
+<p>127.0.0.1:6379&gt; ZADD k1 10 apple 20 pear 30 banana<br>(integer) 3<br>127.0.0.1:6379&gt; ZRANGE k1 0 -1 withscores<br>1)”apple”<br>2)”10”<br>3)”pear”<br>4)”20”<br>5)”banana”<br>6)”30”  </p>
+</blockquote>
+<p><strong>zrevrange key start end</strong>  倒序取出集合</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; ZREVRANGE k1 0 -1<br>1)”banana”<br>2)”pear”<br>3)”apple”  </p>
+</blockquote>
+<p><strong>zrangebyscore key min max</strong> 取出score在min到max之间的有序集合</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; ZRANGEBYSCORE k1 12 31<br>1)”pear”<br>2)”banana”  </p>
+</blockquote>
+<h3 id="3-场景"><a href="#3-场景" class="headerlink" title="3. 场景"></a>3. 场景</h3><p>排行榜、评论</p>
+<h3 id="4-动态排序"><a href="#4-动态排序" class="headerlink" title="4. 动态排序"></a>4. 动态排序</h3><p><strong>正序倒序并没有进行重排序</strong></p>
+<p>排序方式数据结构：ziplist、skiplist（后边详细介绍ziplist和skiplist）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt; **当单个值过大的时候就会进行结构的转换**</span><br><span class="line">&gt;</span><br><span class="line">&gt; <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; OBJECT encoding k1  </span><br><span class="line">&gt; <span class="string">&quot;ziplist&quot;</span>  </span><br><span class="line">&gt; <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; zadd k1 <span class="number">123</span> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  </span><br><span class="line">&gt; (integer) <span class="number">1</span>  </span><br><span class="line">&gt; <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">6379</span>&gt; OBJECT encoding k1  </span><br><span class="line">&gt; <span class="string">&quot;skiplist&quot;</span>  </span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2020/05/17/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%BA%8C)%E2%80%94%E2%80%94Redis%E4%BA%94%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/" title="Redis学习之路(二)——Redis五大数据类型" target="_blank" rel="external">https://rabbit-mar.github.io/2020/05/17/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%BA%8C)%E2%80%94%E2%80%94Redis%E4%BA%94%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+  
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: 'Redis学习之路(二)——Redis五大数据类型',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>

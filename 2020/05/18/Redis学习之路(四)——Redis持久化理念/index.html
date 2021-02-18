@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Redis学习之路(四)——Redis持久化理念 | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="Redis的持久化方式以及redis应用场景辩证">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis学习之路(四)——Redis持久化理念">
+<meta property="og:url" content="https://rabbit-mar.github.io/2020/05/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E5%9B%9B)%E2%80%94%E2%80%94Redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%90%86%E5%BF%B5/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="Redis的持久化方式以及redis应用场景辩证">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picsum.photos/1080/400">
+<meta property="article:published_time" content="2020-05-18T06:22:27.000Z">
+<meta property="article:modified_time" content="2021-02-18T14:00:23.793Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2020/05/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E5%9B%9B)%E2%80%94%E2%80%94Redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%90%86%E5%BF%B5/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">34</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/"
+              class="title">分库分表之sharding-jdbc&amp;mycat</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020-12-23</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%94%EF%BC%89%E2%80%94%E2%80%94-%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84/"
+              class="title">Redis学习之路（五）—— 集群架构</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-11T00:02:55.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">Kafka 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:56:18.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%B8%80%EF%BC%89/"
+              class="title">Kafka 学习之路（一）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:54:03.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">RabbitMQ 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-05T05:20:31.000Z" itemprop="datePublished">2020-12-05</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Redis学习之路(四)——Redis持久化理念" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklb01al3000mtv020j03760u noopener">
+        <img src="https://picsum.photos/1080/400" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    <div class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      Redis学习之路(四)——Redis持久化理念
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/05/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E5%9B%9B)%E2%80%94%E2%80%94Redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%90%86%E5%BF%B5/" class="article-date">
+	  <time datetime="2020-05-18T06:22:27.000Z" itemprop="datePublished">2020年05月18日14时</time>
+	</a>
+</span>
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Redis/" rel="tag">Redis</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	1.7k(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	6(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/05/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E5%9B%9B)%E2%80%94%E2%80%94Redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%90%86%E5%BF%B5/#comments"
+            class="article-comment-link">评论</a></span>
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+      <h1 id="Redis持久化理论"><a href="#Redis持久化理论" class="headerlink" title="Redis持久化理论"></a>Redis持久化理论</h1><h2 id="两类持久化"><a href="#两类持久化" class="headerlink" title="两类持久化"></a>两类持久化</h2><p>一类是RDB、image、bak，统称为派快照，通常和时间点挂钩，在某个时间，进行一次持久化备份(全量备份)。但是如果说下一次时间点备份的时候，发现已经宕机了，那么数据量丢失就会比较大；再一个就是这种备份恢复很快，相对于I/O读取速度，就是把内存中什么样子直接弄到一个文件里面，所以大小也和内存大小差不多。  </p>
+<p>还有一类就是日志、AOF(append only file)。倾向于行为的记录，趋近于实时；再某个时间点突然宕机，同样会丢数据，但是这个丢数据取决系统的配置，如果是用redis操作写，每操作一个sync（磁盘写），redis性能就被压得很低(读客户端io，写到内存，再掉磁盘io写到文件，然后才能调第二个客户端的操作)；如果说是交给os（操作系统）去做，就涉及到一个pagecache（页缓冲）的概念，不断得往里面写。但是同样有丢失，两个维度，一个是5秒，一个是内存的10%。相当于就是达到5s或者内存10%得时候就往文件里面写，看自己得配置用的哪种方式，此时突然宕机就是把内存中积压的数据丢了，而且pagecahce还有一个参数，如果说内存挤压到30%，就会直接阻塞io，不能再往pagecache里面写，pagecache就往磁盘写(类似于stop the world)；也可以采用其他的技术1秒写一次，这样数据丢失量小。  </p>
+<p>DB一般都会使用的DIO（direct io），将pagecache移到进程中去，由自己去维护。</p>
+<blockquote>
+<p>DMA 直接内存访问<strong>（Direct Memory Access，DMA）</strong>是计算机科学计算机科学中的一种内存访问技术。它允许某些电脑内部的硬件子系统（电脑外设），可以独立地直接读写系统内存，而不需中央处理器（CPU）介入处理 。在同等程度的处理器负担下，DMA是一种快速的数据传送方式。</p>
+</blockquote>
+<p><img src="http://img.marvr.top/upload/images/2020/05/18/fe88adaa-26eb-473c-9b55-2dd1a18ed932.png"></p>
+<p><strong>redis默认开启RDB关闭AOF方式</strong>，如果在4.x之前手工开启AOF，重启之后只会读取AOF的内容，放弃RDB内容。如果AOF运行时间超长，AOF文件很大，里面含有大量的无效内容，回滚的时候能够拿到的资源很少。</p>
+<p><strong>如何解决AOF这个问题</strong></p>
+<ol>
+<li>（namenode）采用AOF进行一次全量备份，然后到时间点之后对RDB进行一次写入，然后AOF进行增量备份。</li>
+<li>（redis）追求全量，为了恢复的快，将无效的数据抵消掉，采用了重写的操作，保证AOF文件小(在到达某个点的时候进行重写，例如文件过大)。4.x之后提出一个概念，依旧是开始AOF，当触发重写的时候，不去做去重操作，去进行了一次RDB，将这个RDB文件其放到AOF日志文件头，然后再去做AOF的追加操作</li>
+</ol>
+<p><img src="http://img.marvr.top/upload/images/2020/05/18/92bfba91-b182-42e1-a1cc-9dc7670e88bc.png"></p>
+<h2 id="redis应用场景辩证"><a href="#redis应用场景辩证" class="headerlink" title="redis应用场景辩证"></a>redis应用场景辩证</h2><p>使用redis是由于其内存级的操作，然而采用AOF的话就会降低其效率。  </p>
+<p>如果做缓存就不建议开启AOF，采用最快的缓存方案例如主从复制，但是主从复制是弱一致性，由于是缓冲没有影响。  </p>
+<p>如果做数据库，就必然要开启持久化。那肯定要开redis的sync写，主从复制等，效率和MySQL就差距不大。  </p>
+<h2 id="redis需要解决的问题"><a href="#redis需要解决的问题" class="headerlink" title="redis需要解决的问题"></a>redis需要解决的问题</h2><p>redis定位为单机程序，必然有两类问题：1、单点故障；2、压力过大  </p>
+<p>如果说单点故障后就不可用，就得做主从（主备）复制或者全量集群。但是这样就多台机器存放着相同的数据。  </p>
+<p>如果说压力过大/性能满，那就只有分而治之，将数据进行分片。每台机器存放部分数据，但是同样存在着单机故障，就要对分片机器就行全量集群。  </p>
+<p><strong>所以两种方案同时使用。</strong></p>
+<p><img src="http://img.marvr.top/upload/images/2020/05/18/07fbad7f-49a5-454e-95c4-478248f0ed5d.png"></p>
+<p><strong>如果redis需要HA(高可用)就要主从复制</strong></p>
+<blockquote>
+<p>CAP(C是一致性，A是可用性，P是分区容错性)</p>
+</blockquote>
+<p>强一致性，客户端向redis写数据，redis主机向redis备机写数据，如果redis备机写成功了，就向redis主机发送ok，redis主机收到ok后，再向客户端返回ok。但是备机如果突然挂掉了，则redis主机就等待着备机响应，redis集群对外就表现为不可用。  </p>
+<p><img src="http://img.marvr.top/upload/images/2020/05/18/cb8bdcfa-4914-4f8e-bbbb-48f7dad86781.png"></p>
+<p>弱一致性，客户端向redis主机写数据，redis主机处理成功后直接向客户端写数据，然后再向redis备机写数据。但是无法保证redis备机的数据是否一致  </p>
+<p><img src="http://img.marvr.top/upload/images/2020/05/18/26332644-c086-443f-985a-df93c8a6752e.png"></p>
+<p>所以这里抛出一个问题:<strong>用redis做分布式锁可行吗</strong></p>
+<blockquote>
+<p>可以做分布式锁方式有很多例如，redis、zookeeper&lt;大数据&gt;、etcd<google></p>
+</blockquote>
+<p>涉及行业，如果说金融行业使用redis做分布式锁，就不行，对强一致性要求极高，会导致redis效率过低。如果说互联网行业，对强一致性要求不高的业务来说是没有问题的。  </p>
+<p>最终一致性: 如果说在redis直接有一个黑盒的技术，redis主机将数据写向黑盒，写完就成功返回ok，强一致性，并且不宕机，redis去黑盒拿数据，最终数据是一致的。但是这个技术redis暂时没有。但是在大数据的namenode中实现了。如图所示  </p>
+<p><img src="http://img.marvr.top/upload/images/2020/05/18/c8aa2ce3-7e61-4e54-abd0-616f4c0d5287.png"></p>
+<p><img src="http://img.marvr.top/upload/images/2020/05/18/5977f871-b3f6-4570-973c-7f3cb75bd65d.png"></p>
+<p><strong>分片集群：  将数据分到多个redis机器上</strong></p>
+<p>实现方式有多种  </p>
+<ol>
+<li>对客户端的键值进行hash，然后取模2，分到两个redis机器上，但是需要客户端引入其他jar包，浪费一部分性能，并且扩展性不强</li>
+</ol>
+<p><img src="http://img.marvr.top/upload/images/2020/05/18/54a5f369-9ae7-419a-92e4-833728a0f217.png"></p>
+<ol start="2">
+<li>将hash之类的算法让在一个代理服务器上，由这个服务器进行计算然后发到哪个redis机器上，但是多一台机器，多一份风险，也可以做一个负载均衡，相对于第一种情况好一些</li>
+</ol>
+<p><img src="http://img.marvr.top/upload/images/2020/05/18/108e67b9-1416-4892-a40f-9f0f430645f7.png"></p>
+<ol start="3">
+<li>将算法挪到redis内部，redis可以评估这个key该到哪个redis服务器上去取值。所以在redis中有一个slot槽（16384），当需要扩展时，只需要牵出部分数据到新的redis服务器上即可</li>
+</ol>
+<p><img src="http://img.marvr.top/upload/images/2020/05/18/2d3bb97b-efc2-4d6b-9edf-6d010ed642f6.png"></p>
+<blockquote>
+<p>redis-cli.c:#define CLUSTER_MANAGER_SLOTS 16384<br>/* We have 16384 hash slots. The hash slot of a given key is obtained as the least significant 14 bits of the crc16 of the key. However if the key contains the {…} pattern, only the part between { and } is hashed. This may be useful in the future to force certain keys to be in the same node (assuming no resharding is in progress). */<br>static unsigned int clusterManagerKeyHashSlot(char *key, int keylen) {}  </p>
+</blockquote>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2020/05/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E5%9B%9B)%E2%80%94%E2%80%94Redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%90%86%E5%BF%B5/" title="Redis学习之路(四)——Redis持久化理念" target="_blank" rel="external">https://rabbit-mar.github.io/2020/05/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E5%9B%9B)%E2%80%94%E2%80%94Redis%E6%8C%81%E4%B9%85%E5%8C%96%E7%90%86%E5%BF%B5/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+  
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: 'Redis学习之路(四)——Redis持久化理念',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>NGINX详解四：负载均衡 | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="NGINX详解第四章——NGINX的负载均衡">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NGINX详解四：负载均衡">
+<meta property="og:url" content="https://rabbit-mar.github.io/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E5%9B%9B%EF%BC%9A%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="NGINX详解第四章——NGINX的负载均衡">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picsum.photos/1080/400">
+<meta property="article:published_time" content="2020-11-05T21:56:07.000Z">
+<meta property="article:modified_time" content="2021-02-18T14:52:49.771Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="Nginx">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E5%9B%9B%EF%BC%9A%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">34</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/"
+              class="title">分库分表之sharding-jdbc&amp;mycat</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020-12-23</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%94%EF%BC%89%E2%80%94%E2%80%94-%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84/"
+              class="title">Redis学习之路（五）—— 集群架构</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-11T00:02:55.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">Kafka 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:56:18.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%B8%80%EF%BC%89/"
+              class="title">Kafka 学习之路（一）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:54:03.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">RabbitMQ 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-05T05:20:31.000Z" itemprop="datePublished">2020-12-05</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-NGINX详解四：负载均衡" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklb01am2003ctv023udz8n0u noopener">
+        <img src="https://picsum.photos/1080/400" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    <div class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      NGINX详解四：负载均衡
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E5%9B%9B%EF%BC%9A%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" class="article-date">
+	  <time datetime="2020-11-05T21:56:07.000Z" itemprop="datePublished">2020年11月06日05时</time>
+	</a>
+</span>
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Nginx/" rel="tag">Nginx</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	1k(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	4(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E5%9B%9B%EF%BC%9A%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/#comments"
+            class="article-comment-link">评论</a></span>
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+      <h3 id="四层负载均衡"><a href="#四层负载均衡" class="headerlink" title="四层负载均衡"></a>四层负载均衡</h3><p>基于IP+端口的负载均衡，原理是转发请求到后台服务器，它只负责转发并记录当前连接是由哪个服务器处理的，后续的连接请求就会由同一台服务器处理，相当于长连接。基于传输层TCP/UDP  </p>
+<ul>
+<li>F5 基于硬件的硬负载均衡  </li>
+<li>LVS Linux内核的四层负载均衡  </li>
+<li>Haproxy 四层负载均衡，同时支持七层负载均衡  </li>
+<li>Nginx 四层负载均衡，但主要以七层为主  </li>
+</ul>
+<h3 id="七层负载均衡"><a href="#七层负载均衡" class="headerlink" title="七层负载均衡"></a>七层负载均衡</h3><p>基于URL或者IP的负载均衡，工作于应用层，针对http的负载均衡  </p>
+<ul>
+<li>Nginx 七层负载均衡  </li>
+<li>Haproxy 七层负载均衡  </li>
+<li>apache 七层负载均衡  </li>
+</ul>
+<h3 id="DNS地域负载均衡"><a href="#DNS地域负载均衡" class="headerlink" title="DNS地域负载均衡"></a>DNS地域负载均衡</h3><p><img src="/images/2020/11/06/5a2d6449-ff78-4bca-bb78-75c914f70f64.png" alt="1604050298686"></p>
+<h2 id="负载均衡算法"><a href="#负载均衡算法" class="headerlink" title="负载均衡算法"></a>负载均衡算法</h2><h3 id="轮询"><a href="#轮询" class="headerlink" title="轮询"></a>轮询</h3><h3 id="加权"><a href="#加权" class="headerlink" title="加权"></a>加权</h3><h3 id="ip-hash"><a href="#ip-hash" class="headerlink" title="ip_hash"></a>ip_hash</h3><p> 将请求的IP地址进行hash，采用除模取余法进行决定访问哪台服务器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">upstream backend &#123;</span><br><span class="line">	ip_hash;</span><br><span class="line">	</span><br><span class="line">	server	xxx.example.com;</span><br><span class="line">	# ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="源码实现"><a href="#源码实现" class="headerlink" title="源码实现"></a>源码实现</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># src/http/modules/ngx_http_upstream_ip_hash_module.c</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 在该方法中判断IP地址是IPv4还是IPv6</span></span><br><span class="line"><span class="comment">// 如果是IPv4的话，iphp.addrlen = 3</span></span><br><span class="line"><span class="comment">// 如果是IPv4的话，iphp.addrlen = 16</span></span><br><span class="line"><span class="comment">// 无法判断的情况下默认为3</span></span><br><span class="line"><span class="comment">// 同时赋值 iphp.hash初始值为89，iphp.tries为0;</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">ngx_int_t</span></span><br><span class="line">ngx_http_upstream_init_ip_hash_peer(<span class="keyword">ngx_http_request_t</span> *r,</span><br><span class="line">    <span class="keyword">ngx_http_upstream_srv_conf_t</span> *us)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span>                     *<span class="title">sin</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in6</span>                    *<span class="title">sin6</span>;</span></span><br><span class="line">    <span class="keyword">ngx_http_upstream_ip_hash_peer_data_t</span>  *iphp;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (r-&gt;connection-&gt;sockaddr-&gt;sa_family) &#123;</span><br><span class="line">    <span class="keyword">case</span> AF_INET:</span><br><span class="line">        <span class="built_in">sin</span> = (struct sockaddr_in *) r-&gt;connection-&gt;sockaddr;</span><br><span class="line">        iphp-&gt;addr = (u_char *) &amp;<span class="built_in">sin</span>-&gt;sin_addr.s_addr;</span><br><span class="line">        iphp-&gt;addrlen = <span class="number">3</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> AF_INET6:</span><br><span class="line">        sin6 = (struct sockaddr_in6 *) r-&gt;connection-&gt;sockaddr;</span><br><span class="line">        iphp-&gt;addr = (u_char *) &amp;sin6-&gt;sin6_addr.s6_addr;</span><br><span class="line">        iphp-&gt;addrlen = <span class="number">16</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        iphp-&gt;addr = ngx_http_upstream_ip_hash_pseudo_addr;</span><br><span class="line">        iphp-&gt;addrlen = <span class="number">3</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    iphp-&gt;hash = <span class="number">89</span>;</span><br><span class="line">    iphp-&gt;tries = <span class="number">0</span>;</span><br><span class="line">    iphp-&gt;get_rr_peer = ngx_http_upstream_get_round_robin_peer;</span><br><span class="line">    <span class="keyword">return</span> NGX_OK;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 此方法为hash算法的实现</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">ngx_int_t</span></span><br><span class="line">ngx_http_upstream_get_ip_hash_peer(<span class="keyword">ngx_peer_connection_t</span> *pc, <span class="keyword">void</span> *data)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    hash = iphp-&gt;hash;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> ( ;; ) &#123;</span><br><span class="line">        <span class="comment">// 此处只将IP地址的前三位拿出进行计算</span></span><br><span class="line">        <span class="comment">// 例如 192.168.1.2 ，则为 192 168 1</span></span><br><span class="line">        <span class="comment">// 所以在同一个网段内的IP，其hash值相同</span></span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; (<span class="keyword">ngx_uint_t</span>) iphp-&gt;addrlen; i++) &#123;</span><br><span class="line">            hash = (hash * <span class="number">113</span> + iphp-&gt;addr[i]) % <span class="number">6271</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        w = hash % iphp-&gt;rrp.peers-&gt;total_weight;</span><br><span class="line">        peer = iphp-&gt;rrp.peers-&gt;peer;</span><br><span class="line">        p = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (w &gt;= peer-&gt;weight) &#123;</span><br><span class="line">            w -= peer-&gt;weight;</span><br><span class="line">            peer = peer-&gt;next;</span><br><span class="line">            p++;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        n = p / (<span class="number">8</span> * <span class="keyword">sizeof</span>(<span class="keyword">uintptr_t</span>));</span><br><span class="line">        m = (<span class="keyword">uintptr_t</span>) <span class="number">1</span> &lt;&lt; p % (<span class="number">8</span> * <span class="keyword">sizeof</span>(<span class="keyword">uintptr_t</span>));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (iphp-&gt;rrp.tried[n] &amp; m) &#123;</span><br><span class="line">            <span class="keyword">goto</span> next;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        ngx_log_debug2(NGX_LOG_DEBUG_HTTP, pc-&gt;<span class="built_in">log</span>, <span class="number">0</span>,</span><br><span class="line">                       <span class="string">&quot;get ip hash peer, hash: %ui %04XL&quot;</span>, p, (<span class="keyword">uint64_t</span>) m);</span><br><span class="line"></span><br><span class="line">        ngx_http_upstream_rr_peer_lock(iphp-&gt;rrp.peers, peer);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (peer-&gt;down) &#123;</span><br><span class="line">            ngx_http_upstream_rr_peer_unlock(iphp-&gt;rrp.peers, peer);</span><br><span class="line">            <span class="keyword">goto</span> next;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (peer-&gt;max_fails</span><br><span class="line">            &amp;&amp; peer-&gt;fails &gt;= peer-&gt;max_fails</span><br><span class="line">            &amp;&amp; now - peer-&gt;checked &lt;= peer-&gt;fail_timeout)</span><br><span class="line">        &#123;</span><br><span class="line">            ngx_http_upstream_rr_peer_unlock(iphp-&gt;rrp.peers, peer);</span><br><span class="line">            <span class="keyword">goto</span> next;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (peer-&gt;max_conns &amp;&amp; peer-&gt;conns &gt;= peer-&gt;max_conns) &#123;</span><br><span class="line">            ngx_http_upstream_rr_peer_unlock(iphp-&gt;rrp.peers, peer);</span><br><span class="line">            <span class="keyword">goto</span> next;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    next:</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (++iphp-&gt;tries &gt; <span class="number">20</span>) &#123;</span><br><span class="line">            ngx_http_upstream_rr_peers_unlock(iphp-&gt;rrp.peers);</span><br><span class="line">            <span class="keyword">return</span> iphp-&gt;get_rr_peer(pc, &amp;iphp-&gt;rrp);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    iphp-&gt;rrp.current = peer;</span><br><span class="line"></span><br><span class="line">    pc-&gt;sockaddr = peer-&gt;sockaddr;</span><br><span class="line">    pc-&gt;socklen = peer-&gt;socklen;</span><br><span class="line">    pc-&gt;name = &amp;peer-&gt;name;</span><br><span class="line"></span><br><span class="line">    peer-&gt;conns++;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (now - peer-&gt;checked &gt; peer-&gt;fail_timeout) &#123;</span><br><span class="line">        peer-&gt;checked = now;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ngx_http_upstream_rr_peer_unlock(iphp-&gt;rrp.peers, peer);</span><br><span class="line">    ngx_http_upstream_rr_peers_unlock(iphp-&gt;rrp.peers);</span><br><span class="line"></span><br><span class="line">    iphp-&gt;rrp.tried[n] |= m;</span><br><span class="line">    iphp-&gt;hash = hash;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> NGX_OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h4><ol>
+<li>如果其中一台服务器宕机后，其他客户端就会重新进行hash取值，那么原来服务器上的会话都会丢失，相应缓存也会丢失，解决办法为一致性hash</li>
+</ol>
+<h3 id="一致性hash"><a href="#一致性hash" class="headerlink" title="一致性hash"></a>一致性hash</h3><p>hash值为0~2的32次方，假定存在节点1-4，通过hash运算后位于hash环上的对应位置，用户IP通过hash运算后同样位于环上对应位置，那么用户访问的服务器为由顺时针旋转最近的服务器  </p>
+<p><img src="/images/2020/11/06/09e4b770-ebbb-4232-8f0a-ba8934b455c9.png" alt="1604215214163"></p>
+<p>如果存在一台服务器(节点3)的宕机，那么只有原访问节点三的用户会话丢失，其他用户的会话不会丢失  </p>
+<p><img src="/images/2020/11/06/029e3cfa-025d-4274-8f4e-fc072f7c4ac3.png" alt="1604215483859"></p>
+<p>同样如果添加一台服务器(节点5)，那么只会丢失从逆时针旋转最近的服务器到新节点的会话信息，其他用户不会丢失  </p>
+<p><img src="/images/2020/11/06/a870666f-b629-47c5-b781-0eea683704e0.png" alt="1604215653976"></p>
+<h3 id="url-hash"><a href="#url-hash" class="headerlink" title="url_hash"></a>url_hash</h3><p>与IP的算法区别就在于，将hash的参数改为了请求的url，通过取模求余法，获取对应的服务器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">upstream backend &#123;</span><br><span class="line">	hash $request_uri;</span><br><span class="line">	server	xxx.example.com;</span><br><span class="line">	# ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="least-conn"><a href="#least-conn" class="headerlink" title="least_conn"></a>least_conn</h3><p>最小的连接数，根据每台服务器的连接数决定，哪个连接数小，就访问哪个服务器</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E5%9B%9B%EF%BC%9A%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/" title="NGINX详解四：负载均衡" target="_blank" rel="external">https://rabbit-mar.github.io/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E5%9B%9B%EF%BC%9A%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+  
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: 'NGINX详解四：负载均衡',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Java对象内存布局 | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="该博文受到很多网上公开资源的整合，结合自己的理解，造就这篇博文，所以将其定位为装载">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java对象内存布局">
+<meta property="og:url" content="https://rabbit-mar.github.io/2020/05/20/Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="该博文受到很多网上公开资源的整合，结合自己的理解，造就这篇博文，所以将其定位为装载">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picsum.photos/1080/400">
+<meta property="article:published_time" content="2020-05-19T21:25:05.000Z">
+<meta property="article:modified_time" content="2021-02-18T14:08:18.480Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2020/05/20/Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">34</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/"
+              class="title">分库分表之sharding-jdbc&amp;mycat</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020-12-23</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%94%EF%BC%89%E2%80%94%E2%80%94-%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84/"
+              class="title">Redis学习之路（五）—— 集群架构</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-11T00:02:55.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">Kafka 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:56:18.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%B8%80%EF%BC%89/"
+              class="title">Kafka 学习之路（一）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:54:03.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">RabbitMQ 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-05T05:20:31.000Z" itemprop="datePublished">2020-12-05</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Java对象内存布局" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklb01akx000btv029fozcyxt noopener">
+        <img src="https://picsum.photos/1080/400" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    <div class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      Java对象内存布局
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/05/20/Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/" class="article-date">
+	  <time datetime="2020-05-19T21:25:05.000Z" itemprop="datePublished">2020年05月20日05时</time>
+	</a>
+</span>
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/JVM/" rel="tag">JVM</a>, <a class="article-tag-link-link" href="/tags/Java/" rel="tag">Java</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	1.7k(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	8(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/05/20/Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/#comments"
+            class="article-comment-link">评论</a></span>
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+      <h1 id="java对象内存模型"><a href="#java对象内存模型" class="headerlink" title="java对象内存模型"></a>java对象内存模型</h1><h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>这边博文借助openjdk的开源工具JOL进行分析，在pom.xml中导入对应的包   </p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.openjdk.jol<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jol-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>0.10<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="开篇"><a href="#开篇" class="headerlink" title="开篇"></a>开篇</h2><p>首先确认一个对象的内存布局，分为对象和数值对象两类:  </p>
+<p>普通对象(Object为例)有16个字节  </p>
+<table>
+<thead>
+<tr>
+<th align="center">markword</th>
+<th align="center">class pointer</th>
+<th align="center">instance date</th>
+<th align="center">padding</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">8字节</td>
+<td align="center">4字节</td>
+<td align="center">0字节</td>
+<td align="center">4字节</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>这里解释一下:<br>markword: 固定为8字节  </p>
+<p>class Pointer: 默认使用了压缩指针。64位的操作系统，本来情况下压缩指针也为64位(8字节)，由于jvm使用了压缩指针，将8字节类指针压缩为4字节  </p>
+<p>instance data: 一个空对象[new Object()]由于没有进行赋值，所以为0字节  </p>
+<p>padding: 将整个对象进行对齐，能够被8字节整除。例如前面一共为12字节，加上4字节，正好对齐为16字节，能够被8整除  </p>
+</blockquote>
+<p><strong>※</strong> 见代码  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">	Object o = <span class="keyword">new</span> Object();</span><br><span class="line">	System.out.println(ClassLayout.parseInstance(o).toPrintable());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">java.lang.Object object internals:</span></span><br><span class="line"><span class="comment"> OFFSET  SIZE   TYPE DESCRIPTION                               VALUE</span></span><br><span class="line"><span class="comment">      0     4        (object header)                           05 00 00 00 (00000101 00000000 00000000 00000000) (5)</span></span><br><span class="line"><span class="comment">      4     4        (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)</span></span><br><span class="line"><span class="comment">      8     4        (object header)                           50 1f 89 51 (01010000 00011111 10001001 01010001) (1367940944)</span></span><br><span class="line"><span class="comment">     12     4        (object header)                           1a 02 00 00 (00011010 00000010 00000000 00000000) (538)</span></span><br><span class="line"><span class="comment">Instance size: 16 bytes</span></span><br><span class="line"><span class="comment">Space losses: 0 bytes internal + 0 bytes external = 0 bytes total</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>o：markword(8字节)+class ponter(4字节)+instance data(0字节)+padding(4字节) = 16字节   </p>
+</blockquote>
+<p>如果是数组对象，比普通对象多两个: 数组长度，对象头对齐   </p>
+<table>
+<thead>
+<tr>
+<th align="center">markword</th>
+<th align="center">class pointer</th>
+<th align="center">length</th>
+<th align="center">padding</th>
+<th align="center">instance date</th>
+<th align="center">padding</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">8字节</td>
+<td align="center">默认4字节</td>
+<td align="center">4字节</td>
+<td align="center">4字节/0字节</td>
+<td align="center">N字节</td>
+<td align="center">0字节-7字节</td>
+</tr>
+</tbody></table>
+<p><img src="/images/2020/05/20/dbdb61bd-c914-4cde-ae36-3445fa8913bb.png"></p>
+<p><strong>实例数据区大小视情况而定</strong>  </p>
+<p>基本数据类型:  </p>
+<table>
+<thead>
+<tr>
+<th align="center">int</th>
+<th align="center">long</th>
+<th align="center">float</th>
+<th align="center">double</th>
+<th align="center">byte</th>
+<th align="center">short</th>
+<th align="center">char</th>
+<th align="center">boolean</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">4字节</td>
+<td align="center">8字节</td>
+<td align="center">4字节</td>
+<td align="center">8字节</td>
+<td align="center">1字节</td>
+<td align="center">2字节</td>
+<td align="center">2字节</td>
+<td align="center">1字节</td>
+</tr>
+</tbody></table>
+<p>引用类型数组:   </p>
+<p>开启指针压缩，默认为4字节；关闭指针压缩，为8字节(64位操作系统)</p>
+<p><strong>※</strong> 见代码  </p>
+<p><strong>开启指针压缩</strong>（开启指针压缩以及关闭指针压缩的方式见文末）   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> Test[] arr = &#123;<span class="keyword">new</span> Test(<span class="number">1</span>,<span class="number">2</span>),<span class="keyword">new</span> Test(<span class="number">2</span>,<span class="number">3</span>)&#125;;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span>[] arr1 = &#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>&#125;;</span><br><span class="line">System.out.println(ClassLayout.parseInstance(arr).toPrintable());</span><br><span class="line">System.out.println(ClassLayout.parseInstance(arr1).toPrintable());</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a;</span><br><span class="line">	<span class="keyword">float</span> b;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">Test</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">float</span> b)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.a = a;</span><br><span class="line">		<span class="keyword">this</span>.b = b;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">[Lcom.marveal.Demo.Test; object internals:</span></span><br><span class="line"><span class="comment"> OFFSET  SIZE                    TYPE DESCRIPTION                               VALUE</span></span><br><span class="line"><span class="comment">      0     4                         (object header)                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)</span></span><br><span class="line"><span class="comment">      4     4                         (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)</span></span><br><span class="line"><span class="comment">      8     4                         (object header)                           8a ce 00 20 (10001010 11001110 00000000 00100000) (536923786)</span></span><br><span class="line"><span class="comment">     12     4                         (object header)                           02 00 00 00 (00000010 00000000 00000000 00000000) (2)</span></span><br><span class="line"><span class="comment">     16     8   com.marveal.Demo.Test Test;.&lt;elements&gt;                          N/A</span></span><br><span class="line"><span class="comment">Instance size: 24 bytes</span></span><br><span class="line"><span class="comment">Space losses: 0 bytes internal + 0 bytes external = 0 bytes total</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">--------------------------------------------------------------</span></span><br><span class="line"><span class="comment">[I object internals:</span></span><br><span class="line"><span class="comment"> OFFSET  SIZE   TYPE DESCRIPTION                               VALUE</span></span><br><span class="line"><span class="comment">      0     4        (object header)                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)</span></span><br><span class="line"><span class="comment">      4     4        (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)</span></span><br><span class="line"><span class="comment">      8     4        (object header)                           82 01 00 20 (10000010 00000001 00000000 00100000) (536871298)</span></span><br><span class="line"><span class="comment">     12     4        (object header)                           03 00 00 00 (00000011 00000000 00000000 00000000) (3)</span></span><br><span class="line"><span class="comment">     16    12    int [I.&lt;elements&gt;                             N/A</span></span><br><span class="line"><span class="comment">     28     4        (loss due to the next object alignment)</span></span><br><span class="line"><span class="comment">Instance size: 32 bytes</span></span><br><span class="line"><span class="comment">Space losses: 0 bytes internal + 4 bytes external = 4 bytes total</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>arr数组: markword(8字节)+class pointer(4字节)+ length(4字节)+padding(0字节)+instance data(4字节*2)+padding(0字节)=24字节  </p>
+<p>arr1数组: markword(8字节)+class pointer(4字节)+ length(4字节)+padding(0字节)+instance data(4字节*3)+padding(4字节)=32字节  </p>
+</blockquote>
+<p><strong>关闭指针压缩</strong>:（关闭压缩oop，并非类指针）  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> Test[] arr = &#123;<span class="keyword">new</span> Test(<span class="number">1</span>,<span class="number">2</span>),<span class="keyword">new</span> Test(<span class="number">2</span>,<span class="number">3</span>)&#125;;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span>[] arr1 = &#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>&#125;;</span><br><span class="line"></span><br><span class="line">System.out.println(ClassLayout.parseInstance(arr).toPrintable()); System.out.println(ClassLayout.parseInstance(arr1).toPrintable());</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">[Lcom.marveal.Demo.Test; object internals:</span></span><br><span class="line"><span class="comment"> OFFSET  SIZE                    TYPE DESCRIPTION                               VALUE</span></span><br><span class="line"><span class="comment">      0     4                         (object header)                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)</span></span><br><span class="line"><span class="comment">      4     4                         (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)</span></span><br><span class="line"><span class="comment">      8     4                         (object header)                           c8 5c 69 23 (11001000 01011100 01101001 00100011) (594107592)</span></span><br><span class="line"><span class="comment">     12     4                         (object header)                           df 01 00 00 (11011111 00000001 00000000 00000000) (479)</span></span><br><span class="line"><span class="comment">     16     4                         (object header)                           02 00 00 00 (00000010 00000000 00000000 00000000) (2)</span></span><br><span class="line"><span class="comment">     20     4                         (alignment/padding gap)                  </span></span><br><span class="line"><span class="comment">     24    16   com.marveal.Demo.Test Test;.&lt;elements&gt;                          N/A</span></span><br><span class="line"><span class="comment">Instance size: 40 bytes</span></span><br><span class="line"><span class="comment">Space losses: 4 bytes internal + 0 bytes external = 4 bytes total</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">----------------------------------------------------------------------</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">[I object internals:</span></span><br><span class="line"><span class="comment"> OFFSET  SIZE   TYPE DESCRIPTION                               VALUE</span></span><br><span class="line"><span class="comment">      0     4        (object header)                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)</span></span><br><span class="line"><span class="comment">      4     4        (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)</span></span><br><span class="line"><span class="comment">      8     4        (object header)                           10 0c 29 23 (00010000 00001100 00101001 00100011) (589892624)</span></span><br><span class="line"><span class="comment">     12     4        (object header)                           df 01 00 00 (11011111 00000001 00000000 00000000) (479)</span></span><br><span class="line"><span class="comment">     16     4        (object header)                           03 00 00 00 (00000011 00000000 00000000 00000000) (3)</span></span><br><span class="line"><span class="comment">     20     4        (alignment/padding gap)                  </span></span><br><span class="line"><span class="comment">     24    12    int [I.&lt;elements&gt;                             N/A</span></span><br><span class="line"><span class="comment">     36     4        (loss due to the next object alignment)</span></span><br><span class="line"><span class="comment">Instance size: 40 bytes</span></span><br><span class="line"><span class="comment">Space losses: 4 bytes internal + 4 bytes external = 8 bytes total</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>arr数组: markword(8字节)+class pointer(8字节)+ length(4字节)+padding(4字节)+instance data(8字节*2)+padding(0字节)=40字节  </p>
+<p>arr1数组: markword(8字节)+class pointer(8字节)+ length(4字节)+padding(4字节)+instance data(4字节*3)+padding(4字节)=40字节  </p>
+</blockquote>
+<h2 id="关于开启-关闭指针压缩"><a href="#关于开启-关闭指针压缩" class="headerlink" title="关于开启/关闭指针压缩"></a>关于开启/关闭指针压缩</h2><p>在执行java程序时使用 <code>-XX:+PrintCommandLineFlags</code> 打印默认执行参数  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">C:\&gt;java -XX:+PrintCommandLineFlags -version</span><br><span class="line">-XX:InitialHeapSize&#x3D;129411456</span><br><span class="line">-XX:MaxHeapSize&#x3D;2070583296</span><br><span class="line">-XX:+PrintCommandLineFlags</span><br><span class="line">-XX:+UseCompressedClassPointers</span><br><span class="line">-XX:+UseCompressedOops</span><br><span class="line">-XX:-UseLargePagesIndividualAllocation</span><br><span class="line">-XX:+UseParallelGC</span><br><span class="line">java version &quot;1.8.0_212&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.8.0_212-b10)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 25.212-b10, mixed mode)</span><br></pre></td></tr></table></figure>
+<p>-XX:+UseCompressedClassPointers : 使用压缩指针，64位的操作系统中指针大小也为64(8字节)，使用压缩指针将其变成4字节大小指针  </p>
+<p>-XX:+UseCompressedOops：ordinary object pointer 普通对象指针，默认压缩，也变成四字节  </p>
+<p>可以看到jdk1.8中64位操作系统默认开启了指针压缩， 使用 <code>-XX:-UseCompressedOops</code> 关闭指针压缩(注意！前面是减号)</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><blockquote>
+<p>如果数组大小超过了堆大小，会触发OOM  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> Test[] arr = <span class="keyword">new</span> Test[Integer.MAX_VALUE&gt;&gt;<span class="number">1</span>];</span><br><span class="line">System.out.println(ClassLayout.parseInstance(arr).toPrintable());</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">Exception in thread &quot;main&quot; java.lang.OutOfMemoryError: Java heap space</span></span><br><span class="line"><span class="comment">	at com.marveal.Demo.Main.&lt;clinit&gt;(Main.java:7)</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>一个数组长度过大会超过VM极限（大于Integer.MAX_VALUE-3）  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> Test[] arr = <span class="keyword">new</span> Test[Integer.MAX_VALUE];</span><br><span class="line">System.out.println(ClassLayout.parseInstance(arr).toPrintable());</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">Exception in thread &quot;main&quot; java.lang.OutOfMemoryError: Requested array size exceeds VM limit</span></span><br><span class="line"><span class="comment">	at com.marveal.Demo.Main.&lt;clinit&gt;(Main.java:7)</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>对象内存布局hotspot中的定义</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// openjdk8u\hotspot\src\share\vm\oops\markOop.hpp</span></span><br><span class="line"><span class="comment">//  32 bits:</span></span><br><span class="line"><span class="comment">//  --------</span></span><br><span class="line"><span class="comment">//             hash:25 ------------&gt;| age:4    biased_lock:1 lock:2 (normal object)</span></span><br><span class="line"><span class="comment">//             JavaThread*:23 epoch:2 age:4    biased_lock:1 lock:2 (biased object)</span></span><br><span class="line"><span class="comment">//             size:32 ------------------------------------------&gt;| (CMS free block)</span></span><br><span class="line"><span class="comment">//             PromotedObject*:29 ----------&gt;| promo_bits:3 -----&gt;| (CMS promoted object)</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//  64 bits:</span></span><br><span class="line"><span class="comment">//  --------</span></span><br><span class="line"><span class="comment">//  unused:25 hash:31 --&gt;| unused:1   age:4    biased_lock:1 lock:2 (normal object)</span></span><br><span class="line"><span class="comment">//  JavaThread*:54 epoch:2 unused:1   age:4    biased_lock:1 lock:2 (biased object)</span></span><br><span class="line"><span class="comment">//  PromotedObject*:61 ---------------------&gt;| promo_bits:3 -----&gt;| (CMS promoted object)</span></span><br><span class="line"><span class="comment">//  size:64 -----------------------------------------------------&gt;| (CMS free block)</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//  unused:25 hash:31 --&gt;| cms_free:1 age:4    biased_lock:1 lock:2 (COOPs &amp;&amp; normal object)</span></span><br><span class="line"><span class="comment">//  JavaThread*:54 epoch:2 cms_free:1 age:4    biased_lock:1 lock:2 (COOPs &amp;&amp; biased object)</span></span><br><span class="line"><span class="comment">//  narrowOop:32 unused:24 cms_free:1 unused:4 promo_bits:3 -----&gt;| (COOPs &amp;&amp; CMS promoted object)</span></span><br><span class="line"><span class="comment">//  unused:21 size:35 --&gt;| cms_free:1 unused:7 ------------------&gt;| (COOPs &amp;&amp; CMS free block)</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2020/05/20/Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/" title="Java对象内存布局" target="_blank" rel="external">https://rabbit-mar.github.io/2020/05/20/Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+  
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: 'Java对象内存布局',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>

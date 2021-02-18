@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>ElasticSearch学习之路(四)——数据同步 | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="ElasticSearch学习笔记的第四节，主要介绍使用logstash将mysql数据导入到ES中">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ElasticSearch学习之路(四)——数据同步">
+<meta property="og:url" content="https://rabbit-mar.github.io/2020/11/25/ElasticSearch%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E5%9B%9B)%E2%80%94%E2%80%94%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="ElasticSearch学习笔记的第四节，主要介绍使用logstash将mysql数据导入到ES中">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picsum.photos/1080/400">
+<meta property="article:published_time" content="2020-11-25T08:45:30.000Z">
+<meta property="article:modified_time" content="2021-02-18T14:59:18.642Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="ElasticSearch">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2020/11/25/ElasticSearch%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E5%9B%9B)%E2%80%94%E2%80%94%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">34</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/"
+              class="title">分库分表之sharding-jdbc&amp;mycat</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020-12-23</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%94%EF%BC%89%E2%80%94%E2%80%94-%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84/"
+              class="title">Redis学习之路（五）—— 集群架构</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-11T00:02:55.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">Kafka 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:56:18.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%B8%80%EF%BC%89/"
+              class="title">Kafka 学习之路（一）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:54:03.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">RabbitMQ 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-05T05:20:31.000Z" itemprop="datePublished">2020-12-05</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-ElasticSearch学习之路(四)——数据同步" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklb01am8003stv0229x9ayna noopener">
+        <img src="https://picsum.photos/1080/400" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    <div class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      ElasticSearch学习之路(四)——数据同步
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/11/25/ElasticSearch%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E5%9B%9B)%E2%80%94%E2%80%94%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/" class="article-date">
+	  <time datetime="2020-11-25T08:45:30.000Z" itemprop="datePublished">2020年11月25日16时</time>
+	</a>
+</span>
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a>, <a class="article-tag-link-link" href="/tags/Java/" rel="tag">Java</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	1.2k(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	6(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/11/25/ElasticSearch%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E5%9B%9B)%E2%80%94%E2%80%94%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/#comments"
+            class="article-comment-link">评论</a></span>
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+      <h2 id="logstash数据同步"><a href="#logstash数据同步" class="headerlink" title="logstash数据同步"></a>logstash数据同步</h2><ol>
+<li><p>下载logstash对应的版本的压缩包，上传到服务器</p>
+</li>
+<li><p>解压文件到 /opt/logstash/ 目录下</p>
+</li>
+<li><p>进入解压文件中，新建 sync 文件夹，用于存放数据同步的配置文件</p>
+</li>
+<li><p>下载对应版本的数据库连接包，放到 sync 文件夹内</p>
+</li>
+<li><p>编写SQL查询文件 search.sql</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">    column1,</span><br><span class="line">    column2,</span><br><span class="line">    i.updated_time <span class="keyword">as</span> updated_time</span><br><span class="line"><span class="keyword">FROM</span> <span class="keyword">table</span></span><br><span class="line"><span class="keyword">WHERE</span></span><br><span class="line">	<span class="operator">&lt;</span><span class="keyword">condition</span><span class="operator">&gt;</span></span><br><span class="line">    <span class="keyword">AND</span> i.updated_time <span class="operator">&gt;=</span> :sql_last_value</span><br></pre></td></tr></table></figure></li>
+<li><p>编写配置文件 logstash-db-sync.conf 文件</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">	jdbc &#123;</span><br><span class="line">		<span class="comment"># 设置 Mysql、Mariadb 数据库的url以及数据库名称</span></span><br><span class="line">		jdbc_connection_string =&gt; <span class="string">&quot;jdbc:mysql://&lt;mysql_ip&gt;:&lt;mysql_port&gt;/&lt;db_name&gt;?useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=GMT%2B8&amp;useSSL=false&quot;</span></span><br><span class="line">		<span class="comment"># 用户名和密码</span></span><br><span class="line">		jdbc_user =&gt; <span class="string">&quot;&lt;username&gt;&quot;</span></span><br><span class="line">		jdbc_password =&gt; <span class="string">&quot;&lt;password&gt;&quot;</span></span><br><span class="line">		<span class="comment"># 数据库驱动所在位置，可以是绝对路径也可以是相对路径</span></span><br><span class="line">		jdbc_driver_library =&gt; <span class="string">&quot;&lt;logstash安装目录&gt;/sync/mysql-connector-java-5.1.46.jar&quot;</span></span><br><span class="line">		<span class="comment"># 驱动类名</span></span><br><span class="line">		jdbc_driver_class =&gt; <span class="string">&quot;com.mysql.jdbc.Driver&quot;</span></span><br><span class="line">		<span class="comment"># 开启分页</span></span><br><span class="line">		jdbc_paging_enabled =&gt; <span class="string">&quot;true&quot;</span></span><br><span class="line">		<span class="comment"># 分页每页数量，可以自定义</span></span><br><span class="line">		jdbc_page_size =&gt; <span class="string">&quot;10000&quot;</span></span><br><span class="line">		<span class="comment"># 执行的sql文件路径</span></span><br><span class="line">		statement_filepath =&gt; <span class="string">&quot;&lt;logstash安装目录&gt;/sync/foodie-items.sql&quot;</span></span><br><span class="line">		<span class="comment"># 设置定时任务间隔</span></span><br><span class="line">		schedule =&gt; <span class="string">&quot;* * * * *&quot;</span></span><br><span class="line">		<span class="comment"># 索引类型</span></span><br><span class="line">		type =&gt; <span class="string">&quot;_doc&quot;</span></span><br><span class="line">		<span class="comment"># 是否开启记录上次追踪的结果，也就是上次更新得时间，这个会记录到 last_run_metadata_path 的文件</span></span><br><span class="line">		use_column_value =&gt; <span class="literal">true</span></span><br><span class="line">		<span class="comment"># 记录上一次的追踪值</span></span><br><span class="line">		last_run_metadata_path =&gt; <span class="string">&quot;&lt;logstash安装目录&gt;/sync/track_time&quot;</span></span><br><span class="line">		<span class="comment"># 如果 use_column_value 为 true, 配置本参数，追踪 column 名，可以是id，也可以是更新时间</span></span><br><span class="line">		tracking_column =&gt; <span class="string">&quot;updated_time&quot;</span></span><br><span class="line">		<span class="comment"># tracking_column 对应字段的类型</span></span><br><span class="line">		tracking_column_type =&gt; <span class="string">&quot;timestamp&quot;</span></span><br><span class="line">		<span class="comment"># 是否清除 last_run_metadata_path 的记录，true每次都从头开始查询所有</span></span><br><span class="line">		clean_run =&gt; <span class="literal">false</span></span><br><span class="line">		<span class="comment"># 数据库字段名称大写转小写</span></span><br><span class="line">		lowercase_column_names =&gt; <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">	elasticsearch &#123;</span><br><span class="line">		<span class="comment"># es地址</span></span><br><span class="line">		hosts =&gt; [<span class="string">&quot;&lt;es_ip&gt;:&lt;es_port&gt;&quot;</span>]</span><br><span class="line">		<span class="comment"># 同步的索引名</span></span><br><span class="line">		index =&gt; <span class="string">&quot;&lt;index_name&gt;&quot;</span></span><br><span class="line">		<span class="comment"># 设置 _doc ID和数据相同(sql查询中的id值)</span></span><br><span class="line">		document_id =&gt; <span class="string">&quot;%&#123;id&#125;&quot;</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment"># 日志输出</span></span><br><span class="line">	stdout &#123;</span><br><span class="line">		codec =&gt; json_lines</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>进入bin目录输出命令执行数据同步</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./logstash -f /opt/logstash/logstash-7.10.0/sync/logstash-db-sync.conf </span><br></pre></td></tr></table></figure>
+<h3 id="自定义模板"><a href="#自定义模板" class="headerlink" title="自定义模板"></a>自定义模板</h3></li>
+<li><p>使用api接口获取模板</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line">GET _template/logstash</span><br><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;logstash&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;order&quot;</span>: <span class="number">0</span>,</span><br><span class="line">        <span class="attr">&quot;version&quot;</span>: <span class="number">60001</span>,</span><br><span class="line">        <span class="attr">&quot;index_patterns&quot;</span>: [</span><br><span class="line">            <span class="string">&quot;logstash-*&quot;</span></span><br><span class="line">        ],</span><br><span class="line">        <span class="attr">&quot;settings&quot;</span>: &#123;</span><br><span class="line">            <span class="attr">&quot;index&quot;</span>: &#123;</span><br><span class="line">                <span class="attr">&quot;number_of_shards&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">                <span class="attr">&quot;refresh_interval&quot;</span>: <span class="string">&quot;5s&quot;</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">&quot;mappings&quot;</span>: &#123;</span><br><span class="line">            <span class="attr">&quot;dynamic_templates&quot;</span>: [</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="attr">&quot;message_field&quot;</span>: &#123;</span><br><span class="line">                        <span class="attr">&quot;path_match&quot;</span>: <span class="string">&quot;message&quot;</span>,</span><br><span class="line">                        <span class="attr">&quot;mapping&quot;</span>: &#123;</span><br><span class="line">                            <span class="attr">&quot;norms&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">                            <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span></span><br><span class="line">                        &#125;,</span><br><span class="line">                        <span class="attr">&quot;match_mapping_type&quot;</span>: <span class="string">&quot;string&quot;</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;,</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="attr">&quot;string_fields&quot;</span>: &#123;</span><br><span class="line">                        <span class="attr">&quot;mapping&quot;</span>: &#123;</span><br><span class="line">                            <span class="attr">&quot;norms&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">                            <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span>,</span><br><span class="line">                            <span class="attr">&quot;fields&quot;</span>: &#123;</span><br><span class="line">                                <span class="attr">&quot;keyword&quot;</span>: &#123;</span><br><span class="line">                                    <span class="attr">&quot;ignore_above&quot;</span>: <span class="number">256</span>,</span><br><span class="line">                                    <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">                                &#125;</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;,</span><br><span class="line">                        <span class="attr">&quot;match_mapping_type&quot;</span>: <span class="string">&quot;string&quot;</span>,</span><br><span class="line">                        <span class="attr">&quot;match&quot;</span>: <span class="string">&quot;*&quot;</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">&quot;properties&quot;</span>: &#123;</span><br><span class="line">                <span class="attr">&quot;@timestamp&quot;</span>: &#123;</span><br><span class="line">                    <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span></span><br><span class="line">                &#125;,</span><br><span class="line">                <span class="attr">&quot;geoip&quot;</span>: &#123;</span><br><span class="line">                    <span class="attr">&quot;dynamic&quot;</span>: <span class="literal">true</span>,</span><br><span class="line">                    <span class="attr">&quot;properties&quot;</span>: &#123;</span><br><span class="line">                        <span class="attr">&quot;ip&quot;</span>: &#123;</span><br><span class="line">                            <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;ip&quot;</span></span><br><span class="line">                        &#125;,</span><br><span class="line">                        <span class="attr">&quot;latitude&quot;</span>: &#123;</span><br><span class="line">                            <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;half_float&quot;</span></span><br><span class="line">                        &#125;,</span><br><span class="line">                        <span class="attr">&quot;location&quot;</span>: &#123;</span><br><span class="line">                            <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;geo_point&quot;</span></span><br><span class="line">                        &#125;,</span><br><span class="line">                        <span class="attr">&quot;longitude&quot;</span>: &#123;</span><br><span class="line">                            <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;half_float&quot;</span></span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;,</span><br><span class="line">                <span class="attr">&quot;@version&quot;</span>: &#123;</span><br><span class="line">                    <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">&quot;aliases&quot;</span>: &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>修改该json文件为下列json文件，添加ik分词器</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;order&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">&quot;version&quot;</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">&quot;index_patterns&quot;</span>: [<span class="string">&quot;foodie-*&quot;</span>],</span><br><span class="line">    <span class="attr">&quot;settings&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;index&quot;</span>: &#123;</span><br><span class="line">            <span class="attr">&quot;number_of_shards&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;refresh_interval&quot;</span>: <span class="string">&quot;5s&quot;</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;mappings&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;dynamic_templates&quot;</span>: [</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="attr">&quot;message_field&quot;</span>: &#123;</span><br><span class="line">                    <span class="attr">&quot;path_match&quot;</span>: <span class="string">&quot;message&quot;</span>,</span><br><span class="line">                    <span class="attr">&quot;mapping&quot;</span>: &#123;</span><br><span class="line">                        <span class="attr">&quot;norms&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">                        <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span></span><br><span class="line">                    &#125;,</span><br><span class="line">                    <span class="attr">&quot;match_mapping_type&quot;</span>: <span class="string">&quot;string&quot;</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="attr">&quot;string_fields&quot;</span>: &#123;</span><br><span class="line">                    <span class="attr">&quot;mapping&quot;</span>: &#123;</span><br><span class="line">                        <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span>,</span><br><span class="line">                        <span class="attr">&quot;analyzer&quot;</span>: <span class="string">&quot;ik_max_word&quot;</span>,</span><br><span class="line">                        <span class="attr">&quot;norms&quot;</span>: <span class="literal">false</span>,</span><br><span class="line">                        <span class="attr">&quot;fields&quot;</span>: &#123;</span><br><span class="line">                            <span class="attr">&quot;keyword&quot;</span>: &#123;</span><br><span class="line">                                <span class="attr">&quot;ignore_above&quot;</span>: <span class="number">256</span>,</span><br><span class="line">                                <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;,</span><br><span class="line">                    <span class="attr">&quot;match_mapping_type&quot;</span>: <span class="string">&quot;string&quot;</span>,</span><br><span class="line">                    <span class="attr">&quot;match&quot;</span>: <span class="string">&quot;*&quot;</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ],</span><br><span class="line">        <span class="attr">&quot;properties&quot;</span>: &#123;</span><br><span class="line">            <span class="attr">&quot;@timestamp&quot;</span>: &#123;</span><br><span class="line">                <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;date&quot;</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">&quot;geoip&quot;</span>: &#123;</span><br><span class="line">                <span class="attr">&quot;dynamic&quot;</span>: <span class="literal">true</span>,</span><br><span class="line">                <span class="attr">&quot;properties&quot;</span>: &#123;</span><br><span class="line">                    <span class="attr">&quot;ip&quot;</span>: &#123;</span><br><span class="line">                        <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;ip&quot;</span></span><br><span class="line">                    &#125;,</span><br><span class="line">                    <span class="attr">&quot;latitude&quot;</span>: &#123;</span><br><span class="line">                        <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;half_float&quot;</span></span><br><span class="line">                    &#125;,</span><br><span class="line">                    <span class="attr">&quot;location&quot;</span>: &#123;</span><br><span class="line">                        <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;geo_point&quot;</span></span><br><span class="line">                    &#125;,</span><br><span class="line">                    <span class="attr">&quot;longitude&quot;</span>: &#123;</span><br><span class="line">                        <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;half_float&quot;</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">&quot;@version&quot;</span>: &#123;</span><br><span class="line">                <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;aliases&quot;</span>: &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>将上述的json文件拷贝至 sync/logstash-ik.json 文件中</p>
+</li>
+<li><p>在logstash运行配置文件中添加以下配置</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">output &#123;</span><br><span class="line">	elasticsearch &#123;</span><br><span class="line">		<span class="comment"># 定义模板名称</span></span><br><span class="line">		template_name =&gt; <span class="string">&quot;ik_template&quot;</span></span><br><span class="line">		<span class="comment"># 模板所在位置</span></span><br><span class="line">		template =&gt; <span class="string">&quot;&lt;logstash安装目录&gt;/sync/logstash-ik.json&quot;</span></span><br><span class="line">		<span class="comment"># 重写模板</span></span><br><span class="line">		template_overwrite =&gt; <span class="literal">true</span></span><br><span class="line">		<span class="comment"># 默认为true，false关闭logstash自动管理模板功能，如果自定义模板，则设置为false</span></span><br><span class="line">		manage_template =&gt; <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>如果之前同步过数据需要重新创建新索引</p>
+</li>
+<li><p>运行logstash脚本</p>
+</li>
+</ol>
+<p><strong>※</strong> 如果上述方式不生效，可以采用以下方式</p>
+<ol>
+<li><p>使用api接口获取模板</p>
+</li>
+<li><p>修改该json文件为上述文件，添加ik分词器</p>
+</li>
+<li><p>使用api接口删除es自带模板</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DELETE _template/logstash?pretty</span><br></pre></td></tr></table></figure></li>
+<li><p>使用命令设置新模板</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">POST _template/logstash</span><br><span class="line">&#123;</span><br><span class="line"><span class="meta">	#</span><span class="bash"> …… 新json模板</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>启动logstash脚本</p>
+</li>
+</ol>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2020/11/25/ElasticSearch%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E5%9B%9B)%E2%80%94%E2%80%94%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/" title="ElasticSearch学习之路(四)——数据同步" target="_blank" rel="external">https://rabbit-mar.github.io/2020/11/25/ElasticSearch%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E5%9B%9B)%E2%80%94%E2%80%94%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+  
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: 'ElasticSearch学习之路(四)——数据同步',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>

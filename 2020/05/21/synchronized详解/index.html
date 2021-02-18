@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>synchronized详解 | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="对synchronized关键字底层做一个详细介绍，后续还会补充">
+<meta property="og:type" content="article">
+<meta property="og:title" content="synchronized详解">
+<meta property="og:url" content="https://rabbit-mar.github.io/2020/05/21/synchronized%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="对synchronized关键字底层做一个详细介绍，后续还会补充">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picsum.photos/1080/400">
+<meta property="article:published_time" content="2020-05-21T09:05:37.000Z">
+<meta property="article:modified_time" content="2021-02-18T14:12:10.574Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2020/05/21/synchronized%E8%AF%A6%E8%A7%A3/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">34</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/"
+              class="title">分库分表之sharding-jdbc&amp;mycat</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020-12-23</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%94%EF%BC%89%E2%80%94%E2%80%94-%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84/"
+              class="title">Redis学习之路（五）—— 集群架构</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-11T00:02:55.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">Kafka 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:56:18.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%B8%80%EF%BC%89/"
+              class="title">Kafka 学习之路（一）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:54:03.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">RabbitMQ 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-05T05:20:31.000Z" itemprop="datePublished">2020-12-05</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-synchronized详解" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklb01amm004ytv02688n2mkc noopener">
+        <img src="https://picsum.photos/1080/400" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    <div class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      synchronized详解
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/05/21/synchronized%E8%AF%A6%E8%A7%A3/" class="article-date">
+	  <time datetime="2020-05-21T09:05:37.000Z" itemprop="datePublished">2020年05月21日17时</time>
+	</a>
+</span>
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/JVM/" rel="tag">JVM</a>, <a class="article-tag-link-link" href="/tags/Java/" rel="tag">Java</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	4.3k(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	20(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/05/21/synchronized%E8%AF%A6%E8%A7%A3/#comments"
+            class="article-comment-link">评论</a></span>
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+      <h1 id="synchronized详解"><a href="#synchronized详解" class="headerlink" title="synchronized详解"></a>synchronized详解</h1><h2 id="开篇"><a href="#开篇" class="headerlink" title="开篇"></a>开篇</h2><ul>
+<li><p>了解synchronized需要对Java对象内存布局有一定了解 <a target="_blank" rel="noopener" href="http://www.marvr.top/blog/35" title="指路">指路</a></p>
+</li>
+<li><p>synchronized 是 Java 中的关键字，是利用锁的机制来实现同步的。锁机制有如下两种特性：</p>
+<ol>
+<li><p>互斥性：即在同一时间只允许一个线程持有某个对象锁，通过这种特性来实现多线程中的协调机制，这样在同一时间只有一个线程对需同步的代码块(复合操作)进行访问。互斥性我们也往往称为操作的原子性。</p>
+</li>
+<li><p>可见性：必须确保在锁被释放之前，对共享变量所做的修改，对于随后获得该锁的另一个线程是可见的（即在获得锁时应获得最新共享变量的值），否则另一个线程可能是在本地缓存的某个副本上继续操作从而引起不一致。</p>
+</li>
+</ol>
+</li>
+<li><p>对象锁和类锁</p>
+<ol>
+<li><p>对象锁：在 Java 中，每个对象都会有一个 monitor 对象，这个对象其实就是 Java 对象的锁，通常会被称为“内置锁”或“对象锁”。类的对象可以有多个，所以每个对象有其独立的对象锁，互不干扰。</p>
+</li>
+<li><p>类锁: 在 Java 中，针对每个类也有一个锁，可以称为“类锁”，类锁实际上是通过对象锁实现的，即类的 Class 对象锁。每个类只有一个 Class 对象，所以每个类只有一个类锁。</p>
+</li>
+</ol>
+</li>
+<li><p>synchronized的使用</p>
+<ol>
+<li>直接使用synchronized关键字修饰方法</li>
+<li>synchronized(this|object) {// 修饰非静态方法}</li>
+<li>synchronized(类.class) {// 修饰静态方法}</li>
+</ol>
+</li>
+</ul>
+<h2 id="synchronized的实现"><a href="#synchronized的实现" class="headerlink" title="synchronized的实现"></a>synchronized的实现</h2><p>在早期synchronized是一把重量级锁，申请锁资源需要操作系统内核的实现，在jdk1.5之后对锁进行了升级，产生了一系列锁升级，在竞争不激烈的情况下，就是对对象中markword的修改来实现，竞争情况十分激烈的情况下会由内核操作，详情见下方synchronized锁升级  </p>
+<h3 id="字节码层面"><a href="#字节码层面" class="headerlink" title="字节码层面"></a>字节码层面</h3><p>通过两个字节码指令实现: monitorenter、moniterexit</p>
+<h3 id="JVM层面"><a href="#JVM层面" class="headerlink" title="JVM层面"></a>JVM层面</h3><p>在JVM层面对两个字节码指令进行了实现  </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// hotspot\src\share\vm\interpreter\interpreterRuntime.cpp 606行</span></span><br><span class="line">IRT_ENTRY_NO_ASYNC(<span class="keyword">void</span>, InterpreterRuntime::monitorenter(JavaThread* thread, BasicObjectLock* elem))</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> ASSERT</span></span><br><span class="line">  thread-&gt;last_frame().interpreter_frame_verify_monitor(elem);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">  <span class="keyword">if</span> (PrintBiasedLockingStatistics) &#123;</span><br><span class="line">    Atomic::inc(BiasedLocking::slow_path_entry_count_addr());</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function">Handle <span class="title">h_obj</span><span class="params">(thread, elem-&gt;obj())</span></span>;</span><br><span class="line">  assert(Universe::heap()-&gt;is_in_reserved_or_null(h_obj()),</span><br><span class="line">         <span class="string">&quot;must be NULL or an object&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> (UseBiasedLocking) &#123;</span><br><span class="line">    <span class="comment">// Retry fast entry if bias is revoked to avoid unnecessary inflation</span></span><br><span class="line">    ObjectSynchronizer::fast_enter(h_obj, elem-&gt;lock(), <span class="literal">true</span>, CHECK);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    ObjectSynchronizer::slow_enter(h_obj, elem-&gt;lock(), CHECK);</span><br><span class="line">  &#125;</span><br><span class="line">  assert(Universe::heap()-&gt;is_in_reserved_or_null(elem-&gt;obj()),</span><br><span class="line">         <span class="string">&quot;must be NULL or an object&quot;</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> ASSERT</span></span><br><span class="line">  thread-&gt;last_frame().interpreter_frame_verify_monitor(elem);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">IRT_END</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//%note monitor_1</span></span><br><span class="line">IRT_ENTRY_NO_ASYNC(<span class="keyword">void</span>, InterpreterRuntime::monitorexit(JavaThread* thread, BasicObjectLock* elem))</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> ASSERT</span></span><br><span class="line">  thread-&gt;last_frame().interpreter_frame_verify_monitor(elem);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">  <span class="function">Handle <span class="title">h_obj</span><span class="params">(thread, elem-&gt;obj())</span></span>;</span><br><span class="line">  assert(Universe::heap()-&gt;is_in_reserved_or_null(h_obj()),</span><br><span class="line">         <span class="string">&quot;must be NULL or an object&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> (elem == <span class="literal">NULL</span> || h_obj()-&gt;is_unlocked()) &#123;</span><br><span class="line">    THROW(vmSymbols::java_lang_IllegalMonitorStateException());</span><br><span class="line">  &#125;</span><br><span class="line">  ObjectSynchronizer::slow_exit(h_obj(), elem-&gt;lock(), thread);</span><br><span class="line">  <span class="comment">// Free entry. This must be done here, since a pending exception might be installed on</span></span><br><span class="line">  <span class="comment">// exit. If it is not cleared, the exception handling code will try to unlock the monitor again.</span></span><br><span class="line">  elem-&gt;set_obj(<span class="literal">NULL</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> ASSERT</span></span><br><span class="line">  thread-&gt;last_frame().interpreter_frame_verify_monitor(elem);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">IRT_END</span><br></pre></td></tr></table></figure>
+<p>在第12行代码中判断是否为偏向锁，如果是偏向锁就进入 <code>ObjectSynchronizer::fast_enter</code> 否则就进入 <code>ObjectSynchronizer::slow_enter</code>  </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// hotspot\src\share\vm\runtime\synchronizer.cpp 168行</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">ObjectSynchronizer::fast_enter</span><span class="params">(Handle obj, BasicLock* lock, <span class="keyword">bool</span> attempt_rebias, TRAPS)</span> </span>&#123;</span><br><span class="line"> <span class="keyword">if</span> (UseBiasedLocking) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!SafepointSynchronize::is_at_safepoint()) &#123;</span><br><span class="line">      BiasedLocking::Condition cond = BiasedLocking::revoke_and_rebias(obj, attempt_rebias, THREAD);</span><br><span class="line">      <span class="keyword">if</span> (cond == BiasedLocking::BIAS_REVOKED_AND_REBIASED) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      assert(!attempt_rebias, <span class="string">&quot;can not rebias toward VM thread&quot;</span>);</span><br><span class="line">      BiasedLocking::revoke_at_safepoint(obj);</span><br><span class="line">    &#125;</span><br><span class="line">    assert(!obj-&gt;mark()-&gt;has_bias_pattern(), <span class="string">&quot;biases should be revoked by now&quot;</span>);</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> slow_enter (obj, lock, THREAD) ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>可以看到4行再次判断了是否为偏向锁，
+第五行如果是判断了是否在安全点
+如果不在安全点就执行了偏向锁的撤销重偏向
+如果在安全点，就在安全点上撤销偏向锁
+再去执行了slow_enter
+</code></pre>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// hotspot\src\share\vm\runtime\synchronizer.cpp 212行</span></span><br><span class="line"><span class="comment">// -----------------------------------------------------------------------------</span></span><br><span class="line"><span class="comment">// Interpreter/Compiler Slow Case</span></span><br><span class="line"><span class="comment">// This routine is used to handle interpreter/compiler slow case</span></span><br><span class="line"><span class="comment">// We don&#x27;t need to use fast path here, because it must have been</span></span><br><span class="line"><span class="comment">// failed in the interpreter/compiler code.</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">ObjectSynchronizer::slow_enter</span><span class="params">(Handle obj, BasicLock* lock, TRAPS)</span> </span>&#123;</span><br><span class="line">  markOop mark = obj-&gt;mark();</span><br><span class="line">  assert(!mark-&gt;has_bias_pattern(), <span class="string">&quot;should not see bias pattern here&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (mark-&gt;is_neutral()) &#123;</span><br><span class="line">    <span class="comment">// Anticipate successful CAS -- the ST of the displaced mark must</span></span><br><span class="line">    <span class="comment">// be visible &lt;= the ST performed by the CAS.</span></span><br><span class="line">    lock-&gt;set_displaced_header(mark);</span><br><span class="line">    <span class="keyword">if</span> (mark == (markOop) Atomic::cmpxchg_ptr(lock, obj()-&gt;mark_addr(), mark)) &#123;</span><br><span class="line">      TEVENT (slow_enter: release stacklock) ;</span><br><span class="line">      <span class="keyword">return</span> ;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Fall through to inflate() ...</span></span><br><span class="line">  &#125; <span class="keyword">else</span></span><br><span class="line">  <span class="keyword">if</span> (mark-&gt;has_locker() &amp;&amp; THREAD-&gt;is_lock_owned((address)mark-&gt;locker())) &#123;</span><br><span class="line">    assert(lock != mark-&gt;locker(), <span class="string">&quot;must not re-lock the same lock&quot;</span>);</span><br><span class="line">    assert(lock != (BasicLock*)obj-&gt;mark(), <span class="string">&quot;don&#x27;t relock with same BasicLock&quot;</span>);</span><br><span class="line">    lock-&gt;set_displaced_header(<span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> 0</span></span><br><span class="line">  <span class="comment">// The following optimization isn&#x27;t particularly useful.</span></span><br><span class="line">  <span class="keyword">if</span> (mark-&gt;has_monitor() &amp;&amp; mark-&gt;monitor()-&gt;is_entered(THREAD)) &#123;</span><br><span class="line">    lock-&gt;set_displaced_header (<span class="literal">NULL</span>) ;</span><br><span class="line">    <span class="keyword">return</span> ;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// The object header will never be displaced to this lock,</span></span><br><span class="line">  <span class="comment">// so it does not matter what the value is, except that it</span></span><br><span class="line">  <span class="comment">// must be non-zero to avoid looking like a re-entrant lock,</span></span><br><span class="line">  <span class="comment">// and must not look locked either.</span></span><br><span class="line">  lock-&gt;set_displaced_header(markOopDesc::unused_mark());</span><br><span class="line">  ObjectSynchronizer::inflate(THREAD, obj())-&gt;enter(THREAD);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第15行执行了 <code>cmpxchg_ptr</code> 方法，这是由于锁升级进入了轻量级锁的状态 下面这段代码可以看到<br>inflate方法：膨胀为重量级锁，再下面一段代码可以看到  </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// hotspot\src\os_cpu\linux_x86\vm\atomic_linux_x86.inline.hpp 144行</span></span><br><span class="line"><span class="function"><span class="keyword">inline</span> jlong    <span class="title">Atomic::cmpxchg</span>    <span class="params">(jlong    exchange_value, <span class="keyword">volatile</span> jlong*    dest, jlong    compare_value)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">bool</span> mp = os::is_MP();</span><br><span class="line">  __asm__ __volatile__ (LOCK_IF_MP(%<span class="number">4</span>) <span class="string">&quot;cmpxchgq %1,(%3)&quot;</span></span><br><span class="line">                        : <span class="string">&quot;=a&quot;</span> (exchange_value)</span><br><span class="line">                        : <span class="string">&quot;r&quot;</span> (exchange_value), <span class="string">&quot;a&quot;</span> (compare_value), <span class="string">&quot;r&quot;</span> (dest), <span class="string">&quot;r&quot;</span> (mp)</span><br><span class="line">                        : <span class="string">&quot;cc&quot;</span>, <span class="string">&quot;memory&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> exchange_value;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="keyword">intptr_t</span> <span class="title">Atomic::cmpxchg_ptr</span><span class="params">(<span class="keyword">intptr_t</span> exchange_value, <span class="keyword">volatile</span> <span class="keyword">intptr_t</span>* dest, <span class="keyword">intptr_t</span> compare_value)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> (<span class="keyword">intptr_t</span>)cmpxchg((jlong)exchange_value, (<span class="keyword">volatile</span> jlong*)dest, (jlong)compare_value);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="keyword">void</span>*    <span class="title">Atomic::cmpxchg_ptr</span><span class="params">(<span class="keyword">void</span>*    exchange_value, <span class="keyword">volatile</span> <span class="keyword">void</span>*     dest, <span class="keyword">void</span>*    compare_value)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> (<span class="keyword">void</span>*)cmpxchg((jlong)exchange_value, (<span class="keyword">volatile</span> jlong*)dest, (jlong)compare_value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到轻量级锁调用的 <code>Atomic::cmpxchg_ptr</code> 实际上就是调用了CAS的那个汇编指令 <code>Atomic::cmpxchg</code> ，关于汇编指令参见这–&gt; <a target="_blank" rel="noopener" href="http://www.marvr.top/blog/36" title="指路">指路</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// hotspot\src\share\vm\runtime\synchronizer.cpp 1193行</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Note that we could encounter some performance loss through false-sharing as</span></span><br><span class="line"><span class="comment">// multiple locks occupy the same $ line.  Padding might be appropriate.</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ObjectMonitor * ATTR ObjectSynchronizer::inflate (Thread * Self, oop object) &#123;</span><br><span class="line">  <span class="comment">// Inflate mutates the heap ...</span></span><br><span class="line">  <span class="comment">// Relaxing assertion for bug 6320749.</span></span><br><span class="line">  <span class="keyword">assert</span> (Universe::verify_in_progress() ||</span><br><span class="line">          !SafepointSynchronize::is_at_safepoint(), <span class="string">&quot;invariant&quot;</span>) ;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">      <span class="keyword">const</span> markOop mark = object-&gt;mark() ;</span><br><span class="line">      <span class="keyword">assert</span> (!mark-&gt;has_bias_pattern(), <span class="string">&quot;invariant&quot;</span>) ;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// The mark can be in one of the following states:</span></span><br><span class="line">      <span class="comment">// *  Inflated     - just return</span></span><br><span class="line">      <span class="comment">// *  Stack-locked - coerce it to inflated</span></span><br><span class="line">      <span class="comment">// *  INFLATING    - busy wait for conversion to complete</span></span><br><span class="line">      <span class="comment">// *  Neutral      - aggressively inflate the object.</span></span><br><span class="line">      <span class="comment">// *  BIASED       - Illegal.  We should never see this</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">// CASE: inflated</span></span><br><span class="line">      <span class="keyword">if</span> (mark-&gt;has_monitor()) &#123;</span><br><span class="line">          ObjectMonitor * inf = mark-&gt;monitor() ;</span><br><span class="line">          <span class="keyword">assert</span> (inf-&gt;header()-&gt;is_neutral(), <span class="string">&quot;invariant&quot;</span>);</span><br><span class="line">          <span class="keyword">assert</span> (inf-&gt;object() == object, <span class="string">&quot;invariant&quot;</span>) ;</span><br><span class="line">          <span class="keyword">assert</span> (ObjectSynchronizer::verify_objmon_isinpool(inf), <span class="string">&quot;monitor is invalid&quot;</span>);</span><br><span class="line">          <span class="keyword">return</span> inf ;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// CASE: inflation in progress - inflating over a stack-lock.</span></span><br><span class="line">      <span class="comment">// Some other thread is converting from stack-locked to inflated.</span></span><br><span class="line">      <span class="comment">// Only that thread can complete inflation -- other threads must wait.</span></span><br><span class="line">      <span class="comment">// The INFLATING value is transient.</span></span><br><span class="line">      <span class="comment">// Currently, we spin/yield/park and poll the markword, waiting for inflation to finish.</span></span><br><span class="line">      <span class="comment">// We could always eliminate polling by parking the thread on some auxiliary list.</span></span><br><span class="line">      <span class="keyword">if</span> (mark == markOopDesc::INFLATING()) &#123;</span><br><span class="line">         TEVENT (Inflate: spin <span class="keyword">while</span> INFLATING) ;</span><br><span class="line">         ReadStableMark(object) ;</span><br><span class="line">         <span class="keyword">continue</span> ;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// CASE: stack-locked</span></span><br><span class="line">      <span class="comment">// Could be stack-locked either by this thread or by some other thread.</span></span><br><span class="line">      <span class="comment">//</span></span><br><span class="line">      <span class="comment">// Note that we allocate the objectmonitor speculatively, _before_ attempting</span></span><br><span class="line">      <span class="comment">// to install INFLATING into the mark word.  We originally installed INFLATING,</span></span><br><span class="line">      <span class="comment">// allocated the objectmonitor, and then finally STed the address of the</span></span><br><span class="line">      <span class="comment">// objectmonitor into the mark.  This was correct, but artificially lengthened</span></span><br><span class="line">      <span class="comment">// the interval in which INFLATED appeared in the mark, thus increasing</span></span><br><span class="line">      <span class="comment">// the odds of inflation contention.</span></span><br><span class="line">      <span class="comment">//</span></span><br><span class="line">      <span class="comment">// We now use per-thread private objectmonitor free lists.</span></span><br><span class="line">      <span class="comment">// These list are reprovisioned from the global free list outside the</span></span><br><span class="line">      <span class="comment">// critical INFLATING...ST interval.  A thread can transfer</span></span><br><span class="line">      <span class="comment">// multiple objectmonitors en-mass from the global free list to its local free list.</span></span><br><span class="line">      <span class="comment">// This reduces coherency traffic and lock contention on the global free list.</span></span><br><span class="line">      <span class="comment">// Using such local free lists, it doesn&#x27;t matter if the omAlloc() call appears</span></span><br><span class="line">      <span class="comment">// before or after the CAS(INFLATING) operation.</span></span><br><span class="line">      <span class="comment">// See the comments in omAlloc().</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (mark-&gt;has_locker()) &#123;</span><br><span class="line">          ObjectMonitor * m = omAlloc (Self) ;</span><br><span class="line">          <span class="comment">// Optimistically prepare the objectmonitor - anticipate successful CAS</span></span><br><span class="line">          <span class="comment">// We do this before the CAS in order to minimize the length of time</span></span><br><span class="line">          <span class="comment">// in which INFLATING appears in the mark.</span></span><br><span class="line">          m-&gt;Recycle();</span><br><span class="line">          m-&gt;_Responsible  = NULL ;</span><br><span class="line">          m-&gt;OwnerIsThread = <span class="number">0</span> ;</span><br><span class="line">          m-&gt;_recursions   = <span class="number">0</span> ;</span><br><span class="line">          m-&gt;_SpinDuration = ObjectMonitor::Knob_SpinLimit ;   <span class="comment">// Consider: maintain by type/class</span></span><br><span class="line"></span><br><span class="line">          markOop cmp = (markOop) Atomic::cmpxchg_ptr (markOopDesc::INFLATING(), object-&gt;mark_addr(), mark) ;</span><br><span class="line">          <span class="keyword">if</span> (cmp != mark) &#123;</span><br><span class="line">             omRelease (Self, m, <span class="keyword">true</span>) ;</span><br><span class="line">             <span class="keyword">continue</span> ;       <span class="comment">// Interference -- just retry</span></span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          <span class="comment">// We&#x27;ve successfully installed INFLATING (0) into the mark-word.</span></span><br><span class="line">          <span class="comment">// This is the only case where 0 will appear in a mark-work.</span></span><br><span class="line">          <span class="comment">// Only the singular thread that successfully swings the mark-word</span></span><br><span class="line">          <span class="comment">// to 0 can perform (or more precisely, complete) inflation.</span></span><br><span class="line">          <span class="comment">//</span></span><br><span class="line">          <span class="comment">// Why do we CAS a 0 into the mark-word instead of just CASing the</span></span><br><span class="line">          <span class="comment">// mark-word from the stack-locked value directly to the new inflated state?</span></span><br><span class="line">          <span class="comment">// Consider what happens when a thread unlocks a stack-locked object.</span></span><br><span class="line">          <span class="comment">// It attempts to use CAS to swing the displaced header value from the</span></span><br><span class="line">          <span class="comment">// on-stack basiclock back into the object header.  Recall also that the</span></span><br><span class="line">          <span class="comment">// header value (hashcode, etc) can reside in (a) the object header, or</span></span><br><span class="line">          <span class="comment">// (b) a displaced header associated with the stack-lock, or (c) a displaced</span></span><br><span class="line">          <span class="comment">// header in an objectMonitor.  The inflate() routine must copy the header</span></span><br><span class="line">          <span class="comment">// value from the basiclock on the owner&#x27;s stack to the objectMonitor, all</span></span><br><span class="line">          <span class="comment">// the while preserving the hashCode stability invariants.  If the owner</span></span><br><span class="line">          <span class="comment">// decides to release the lock while the value is 0, the unlock will fail</span></span><br><span class="line">          <span class="comment">// and control will eventually pass from slow_exit() to inflate.  The owner</span></span><br><span class="line">          <span class="comment">// will then spin, waiting for the 0 value to disappear.   Put another way,</span></span><br><span class="line">          <span class="comment">// the 0 causes the owner to stall if the owner happens to try to</span></span><br><span class="line">          <span class="comment">// drop the lock (restoring the header from the basiclock to the object)</span></span><br><span class="line">          <span class="comment">// while inflation is in-progress.  This protocol avoids races that might</span></span><br><span class="line">          <span class="comment">// would otherwise permit hashCode values to change or &quot;flicker&quot; for an object.</span></span><br><span class="line">          <span class="comment">// Critically, while object-&gt;mark is 0 mark-&gt;displaced_mark_helper() is stable.</span></span><br><span class="line">          <span class="comment">// 0 serves as a &quot;BUSY&quot; inflate-in-progress indicator.</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">          <span class="comment">// fetch the displaced mark from the owner&#x27;s stack.</span></span><br><span class="line">          <span class="comment">// The owner can&#x27;t die or unwind past the lock while our INFLATING</span></span><br><span class="line">          <span class="comment">// object is in the mark.  Furthermore the owner can&#x27;t complete</span></span><br><span class="line">          <span class="comment">// an unlock on the object, either.</span></span><br><span class="line">          markOop dmw = mark-&gt;displaced_mark_helper() ;</span><br><span class="line">          <span class="keyword">assert</span> (dmw-&gt;is_neutral(), <span class="string">&quot;invariant&quot;</span>) ;</span><br><span class="line"></span><br><span class="line">          <span class="comment">// Setup monitor fields to proper values -- prepare the monitor</span></span><br><span class="line">          m-&gt;set_header(dmw) ;</span><br><span class="line"></span><br><span class="line">          <span class="comment">// Optimization: if the mark-&gt;locker stack address is associated</span></span><br><span class="line">          <span class="comment">// with this thread we could simply set m-&gt;_owner = Self and</span></span><br><span class="line">          <span class="comment">// m-&gt;OwnerIsThread = 1. Note that a thread can inflate an object</span></span><br><span class="line">          <span class="comment">// that it has stack-locked -- as might happen in wait() -- directly</span></span><br><span class="line">          <span class="comment">// with CAS.  That is, we can avoid the xchg-NULL .... ST idiom.</span></span><br><span class="line">          m-&gt;set_owner(mark-&gt;locker());</span><br><span class="line">          m-&gt;set_object(object);</span><br><span class="line">          <span class="comment">// TODO-<span class="doctag">FIXME:</span> assert BasicLock-&gt;dhw != 0.</span></span><br><span class="line"></span><br><span class="line">          <span class="comment">// Must preserve store ordering. The monitor state must</span></span><br><span class="line">          <span class="comment">// be stable at the time of publishing the monitor address.</span></span><br><span class="line">          guarantee (object-&gt;mark() == markOopDesc::INFLATING(), <span class="string">&quot;invariant&quot;</span>) ;</span><br><span class="line">          object-&gt;release_set_mark(markOopDesc::encode(m));</span><br><span class="line"></span><br><span class="line">          <span class="comment">// Hopefully the performance counters are allocated on distinct cache lines</span></span><br><span class="line">          <span class="comment">// to avoid false sharing on MP systems ...</span></span><br><span class="line">          <span class="keyword">if</span> (ObjectMonitor::_sync_Inflations != NULL) ObjectMonitor::_sync_Inflations-&gt;inc() ;</span><br><span class="line">          TEVENT(Inflate: overwrite stacklock) ;</span><br><span class="line">          <span class="keyword">if</span> (TraceMonitorInflation) &#123;</span><br><span class="line">            <span class="keyword">if</span> (object-&gt;is_instance()) &#123;</span><br><span class="line">              ResourceMark rm;</span><br><span class="line">              tty-&gt;print_cr(<span class="string">&quot;Inflating object &quot;</span> INTPTR_FORMAT <span class="string">&quot; , mark &quot;</span> INTPTR_FORMAT <span class="string">&quot; , type %s&quot;</span>,</span><br><span class="line">                (<span class="keyword">void</span> *) object, (intptr_t) object-&gt;mark(),</span><br><span class="line">                object-&gt;klass()-&gt;external_name());</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">return</span> m ;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// CASE: neutral</span></span><br><span class="line">      <span class="comment">// TODO-<span class="doctag">FIXME:</span> for entry we currently inflate and then try to CAS _owner.</span></span><br><span class="line">      <span class="comment">// If we know we&#x27;re inflating for entry it&#x27;s better to inflate by swinging a</span></span><br><span class="line">      <span class="comment">// pre-locked objectMonitor pointer into the object header.   A successful</span></span><br><span class="line">      <span class="comment">// CAS inflates the object *and* confers ownership to the inflating thread.</span></span><br><span class="line">      <span class="comment">// In the current implementation we use a 2-step mechanism where we CAS()</span></span><br><span class="line">      <span class="comment">// to inflate and then CAS() again to try to swing _owner from NULL to Self.</span></span><br><span class="line">      <span class="comment">// An inflateTry() method that we could call from fast_enter() and slow_enter()</span></span><br><span class="line">      <span class="comment">// would be useful.</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">assert</span> (mark-&gt;is_neutral(), <span class="string">&quot;invariant&quot;</span>);</span><br><span class="line">      ObjectMonitor * m = omAlloc (Self) ;</span><br><span class="line">      <span class="comment">// prepare m for installation - set monitor to initial state</span></span><br><span class="line">      m-&gt;Recycle();</span><br><span class="line">      m-&gt;set_header(mark);</span><br><span class="line">      m-&gt;set_owner(NULL);</span><br><span class="line">      m-&gt;set_object(object);</span><br><span class="line">      m-&gt;OwnerIsThread = <span class="number">1</span> ;</span><br><span class="line">      m-&gt;_recursions   = <span class="number">0</span> ;</span><br><span class="line">      m-&gt;_Responsible  = NULL ;</span><br><span class="line">      m-&gt;_SpinDuration = ObjectMonitor::Knob_SpinLimit ;       <span class="comment">// consider: keep metastats by type/class</span></span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (Atomic::cmpxchg_ptr (markOopDesc::encode(m), object-&gt;mark_addr(), mark) != mark) &#123;</span><br><span class="line">          m-&gt;set_object (NULL) ;</span><br><span class="line">          m-&gt;set_owner  (NULL) ;</span><br><span class="line">          m-&gt;OwnerIsThread = <span class="number">0</span> ;</span><br><span class="line">          m-&gt;Recycle() ;</span><br><span class="line">          omRelease (Self, m, <span class="keyword">true</span>) ;</span><br><span class="line">          m = NULL ;</span><br><span class="line">          <span class="keyword">continue</span> ;</span><br><span class="line">          <span class="comment">// interference - the markword changed - just retry.</span></span><br><span class="line">          <span class="comment">// The state-transitions are one-way, so there&#x27;s no chance of</span></span><br><span class="line">          <span class="comment">// live-lock -- &quot;Inflated&quot; is an absorbing state.</span></span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// Hopefully the performance counters are allocated on distinct</span></span><br><span class="line">      <span class="comment">// cache lines to avoid false sharing on MP systems ...</span></span><br><span class="line">      <span class="keyword">if</span> (ObjectMonitor::_sync_Inflations != NULL) ObjectMonitor::_sync_Inflations-&gt;inc() ;</span><br><span class="line">      TEVENT(Inflate: overwrite neutral) ;</span><br><span class="line">      <span class="keyword">if</span> (TraceMonitorInflation) &#123;</span><br><span class="line">        <span class="keyword">if</span> (object-&gt;is_instance()) &#123;</span><br><span class="line">          ResourceMark rm;</span><br><span class="line">          tty-&gt;print_cr(<span class="string">&quot;Inflating object &quot;</span> INTPTR_FORMAT <span class="string">&quot; , mark &quot;</span> INTPTR_FORMAT <span class="string">&quot; , type %s&quot;</span>,</span><br><span class="line">            (<span class="keyword">void</span> *) object, (intptr_t) object-&gt;mark(),</span><br><span class="line">            object-&gt;klass()-&gt;external_name());</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> m ;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>这二百行代码就是锁膨胀的过程
+</code></pre>
+<h2 id="hotspot中对markword的实现"><a href="#hotspot中对markword的实现" class="headerlink" title="hotspot中对markword的实现"></a>hotspot中对markword的实现</h2><p>下面这张图是作者画的，参照理解  </p>
+<p><img src="/images/2020/05/21/d6dcda71-8934-4a95-961d-4e835721da33.jpg"></p>
+<h2 id="synchronized锁升级"><a href="#synchronized锁升级" class="headerlink" title="synchronized锁升级"></a>synchronized锁升级</h2><p>JDK较早的版本 OS的资源 互斥量（mutex） 用户态 -&gt; 内核态的转换 重量级 效率比较低  </p>
+<p>锁升级后: 无锁 - 偏向锁 -轻量级锁（自旋锁）-重量级锁  </p>
+<p>偏向锁 - markword 上记录当前线程指针，下次同一个线程加锁的时候，不需要争用，只需要判断线程指针是否同一个，所以，偏向锁，偏向加锁的第一个线程 。hashCode备份在线程栈上 线程销毁，锁降级为无锁  </p>
+<p>有争用 - 锁升级为轻量级锁 - 每个线程有自己的LockRecord在自己的线程栈上，用CAS去争用markword的LR的指针，指针指向哪个线程的LR，哪个线程就拥有锁  </p>
+<p>自旋超过10次，升级为重量级锁 - 如果太多线程自旋 CPU消耗过大，不如升级为重量级锁，进入等待队列（不消耗CPU）-XX:PreBlockSpin  </p>
+<p>自旋锁在 JDK1.4.2 中引入，使用 -XX:+UseSpinning 来开启。JDK 6 中变为默认开启，并且引入了自适应的自旋锁（适应性自旋锁）。  </p>
+<p>自适应自旋锁意味着自旋的时间（次数）不再固定，而是由前一次在同一个锁上的自旋时间及锁的拥有者的状态来决定。如果在同一个锁对象上，自旋等待刚刚成功获得过锁，并且持有锁的线程正在运行中，那么虚拟机就会认为这次自旋也是很有可能再次成功，进而它将允许自旋等待持续相对更长的时间。如果对于某个锁，自旋很少成功获得过，那在以后尝试获取这个锁时将可能省略掉自旋过程，直接阻塞线程，避免浪费处理器资源。  </p>
+<p>偏向锁由于有锁撤销的过程revoke，会消耗系统资源，所以，在锁争用特别激烈的时候，用偏向锁未必效率高。还不如直接使用轻量级锁。  </p>
+<p><img src="/images/2020/05/21/c725f74e-43bb-4c4a-9fa6-893d9fa2f686.jpg"></p>
+<ol>
+<li>jdk1.8环境下新new出来的对象默认是001，正常状态。jdk11环境下new出来的对象调用hashcode后无法进入偏向锁状态，就会变成001正常状态</li>
+<li>jdk11默认new出来的对象就是匿名偏向对象</li>
+<li>jdk11加锁后并且未调用hashcode方法，会由匿名偏向升级到偏向锁</li>
+<li>jdk11调用hashcode并且加锁就是变成轻量级锁</li>
+<li>自旋的线程多了就会变为重量级锁</li>
+<li>jdk1.8调用hashcode并且加锁就会变成轻量级锁</li>
+<li>多个线程抢占锁或者等待时间长直接变为重量级锁</li>
+</ol>
+<p><strong>部分总结</strong></p>
+<ul>
+<li>只要上锁就上偏向锁</li>
+<li>外面线程少就自旋等待</li>
+<li>自旋多了就直接重量级锁</li>
+<li>偏向锁不可重偏向 批量偏向 批量撤销</li>
+<li>轻量级锁: 线程在自己的线程栈生成LockRecord ，用CAS操作将markword设置为指向自己这个线程的LR的指针，设置成功者得到锁</li>
+<li>竞争加剧：有线程超过10次自旋， -XX:PreBlockSpin， 或者自旋线程数超过CPU核数的一半， 1.6之后，加入自适应自旋 Adapative Self Spinning ， JVM自己控制</li>
+<li>升级重量级锁：-&gt; 向操作系统申请资源，linux mutex , CPU从3级-0级系统调用，线程挂起，进入等待队列，等待操作系统的调度，然后再映射回用户空间</li>
+</ul>
+<h2 id="synchronized-vs-Lock-CAS"><a href="#synchronized-vs-Lock-CAS" class="headerlink" title="synchronized vs Lock (CAS)"></a>synchronized vs Lock (CAS)</h2><blockquote>
+<p> 在高争用 高耗时的环境下synchronized效率更高<br> 在低争用 低耗时的环境下CAS效率更高<br> synchronized到重量级之后是等待队列（不消耗CPU）<br> CAS（等待期间消耗CPU）<br> <strong>一切以实测为准</strong>  </p>
+</blockquote>
+<h2 id="锁消除-lock-eliminate"><a href="#锁消除-lock-eliminate" class="headerlink" title="锁消除 lock eliminate"></a>锁消除 lock eliminate</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">StringBuffer sb = <span class="keyword">new</span> StringBuffer();</span><br><span class="line">sb.append(<span class="number">1</span>).append(<span class="number">2</span>).append(<span class="number">3</span>);     System.out.println(ClassLayout.parseInstance(sb).toPrintable());</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>StringBuffer 是线程安全的，因为它的关键方法都是被 synchronized 修饰过的，但我们看上面这段代码，我们会发现，sb 这个引用只会在 add 方法中使用，不可能被其它线程引用（因为是局部变量，栈私有），因此 sb 是不可能共享的资源，JVM 会自动消除 StringBuffer 对象内部的锁。</p>
+<h2 id="锁粗化-lock-coarsening"><a href="#锁粗化-lock-coarsening" class="headerlink" title="锁粗化 lock coarsening"></a>锁粗化 lock coarsening</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">StringBuffer sb = <span class="keyword">new</span> StringBuffer();</span><br><span class="line"><span class="keyword">int</span> count = <span class="number">100</span>;</span><br><span class="line"><span class="keyword">while</span> (count-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">	sb.append(<span class="number">1</span>);</span><br><span class="line">&#125;     System.out.println(ClassLayout.parseInstance(sb).toPrintable());</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>JVM 会检测到这样一连串的操作都对同一个对象加锁（while 循环内 100 次执行 append，没有锁粗化的就要进行 100  次加锁/解锁），此时 JVM 就会将加锁的范围粗化到这一连串的操作的外部（比如 while 虚幻体外），使得这一连串操作只需要加一次锁即可。</p>
+<h2 id="锁重入"><a href="#锁重入" class="headerlink" title="锁重入"></a>锁重入</h2><p>sychronized是可重入锁<br>重入次数必须记录，因为要解锁几次必须得对应<br>偏向锁 自旋锁 -&gt; 线程栈 -&gt; LR + 1<br>重量级锁 -&gt; ObjectMonitor字段上</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">T</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">volatile</span> <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">n</span><span class="params">()</span> </span>&#123; i++; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">m</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">    <span class="function">publics <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>; j&lt;<span class="number">1000_000</span>; j++) &#123;</span><br><span class="line">            m();</span><br><span class="line">            n();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>openjdk中引入hsdis插件，打印出JIT中的所有汇编指令，执行java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly T</p>
+<p>C1 Compile Level 1 (一级优化)<br>C2 Compile Level 2 (二级优化)</p>
+<p>找到m() n()方法的汇编码，会看到 lock comxchg …..指令</p>
+<p><img src="/images/2020/05/22/1b8d36c4-f153-4e95-a718-46ee75ba9783.jpg"></p>
+<h2 id="Q-amp-A"><a href="#Q-amp-A" class="headerlink" title="Q&amp;A"></a>Q&amp;A</h2><p><strong>Q</strong>: 轻量级锁重量级锁的hashCode存在与什么地方？<br><strong>A</strong>: 线程栈中，轻量级锁的LR中，或是代表重量级锁的ObjectMonitor的成员中</p>
+<p><strong>Q</strong>: 自旋锁什么时候升级为重量级锁？为什么有自旋锁还需要重量级锁<br><strong>A</strong>: 自旋是消耗CPU资源的，如果锁的时间长，或者自旋线程多，CPU会被大量消耗,重量级锁（非公平锁、metux）有等待队列，所有拿不到锁的进入等待队列，不需要消耗CPU资源</p>
+<p><strong>Q</strong>: 偏向锁是否一定比自旋锁效率高？<br><strong>A</strong>: 不一定，在明确知道会有多线程竞争的情况下，偏向锁肯定会涉及锁撤销，这时候直接使用自旋锁, JVM启动过程，会有很多线程竞争（明确），所以默认情况启动时不打开偏向锁，过一段儿时间再打开</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><blockquote>
+<p>开篇参考<br>作者：zly394<br>链接：<a target="_blank" rel="noopener" href="https://juejin.im/post/594a24defe88c2006aa01f1c">https://juejin.im/post/594a24defe88c2006aa01f1c</a><br>来源：掘金<br>著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</p>
+</blockquote>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2020/05/21/synchronized%E8%AF%A6%E8%A7%A3/" title="synchronized详解" target="_blank" rel="external">https://rabbit-mar.github.io/2020/05/21/synchronized%E8%AF%A6%E8%A7%A3/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+  
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: 'synchronized详解',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>

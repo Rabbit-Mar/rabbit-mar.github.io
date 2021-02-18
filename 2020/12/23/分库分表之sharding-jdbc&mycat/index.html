@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>分库分表之sharding-jdbc&amp;mycat | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="分库分表介绍，并使用sharding-jdbc和mycat">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分库分表之sharding-jdbc&amp;mycat">
+<meta property="og:url" content="https://rabbit-mar.github.io/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="分库分表介绍，并使用sharding-jdbc和mycat">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picsum.photos/1080/400">
+<meta property="article:published_time" content="2020-12-22T20:00:08.000Z">
+<meta property="article:modified_time" content="2021-02-18T15:07:06.013Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="sharding-jdbc">
+<meta property="article:tag" content="mycat">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">34</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/"
+              class="title">分库分表之sharding-jdbc&amp;mycat</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020-12-23</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%94%EF%BC%89%E2%80%94%E2%80%94-%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84/"
+              class="title">Redis学习之路（五）—— 集群架构</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-11T00:02:55.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">Kafka 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:56:18.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/11/Kafka-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%B8%80%EF%BC%89/"
+              class="title">Kafka 学习之路（一）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-10T23:54:03.000Z" itemprop="datePublished">2020-12-11</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/05/RabbitMQ-%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF%EF%BC%88%E4%BA%8C%EF%BC%89/"
+              class="title">RabbitMQ 学习之路（二）</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-05T05:20:31.000Z" itemprop="datePublished">2020-12-05</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-分库分表之sharding-jdbc&amp;mycat" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklb01amd0047tv022euk1ola noopener">
+        <img src="https://picsum.photos/1080/400" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    <div class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      分库分表之sharding-jdbc&amp;mycat
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/" class="article-date">
+	  <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020年12月23日04时</time>
+	</a>
+</span>
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/mycat/" rel="tag">mycat</a>, <a class="article-tag-link-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	2k(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	9(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/#comments"
+            class="article-comment-link">评论</a></span>
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+      <h1 id="分库分表"><a href="#分库分表" class="headerlink" title="分库分表"></a>分库分表</h1><p>互联网大数据时代，如何解决数据库性能瓶颈</p>
+<ul>
+<li><p>读多写少的情况，采用读写分离</p>
+</li>
+<li><p>海量数据的情况，采用数据切分</p>
+<ul>
+<li><p>数据切分方式一：垂直切分</p>
+<blockquote>
+<ul>
+<li>按照业务切分</li>
+<li>每种业务一个数据库</li>
+<li>不同业务之间，禁止跨库join联查</li>
+</ul>
+<p><img src="/images/2020/12/23/f650cb36-3456-4ed0-8949-7ff0e730cb0d.png" alt="1607438375442"></p>
+<p>优点：</p>
+<ol>
+<li>拆分后业务清晰，拆分规则明确；</li>
+<li>系统之间容易扩展和整合</li>
+<li>数据维护简单</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>部分业务表无法join，只能通过接口调用，提升了系统的复杂度</li>
+<li>跨库事务难以处理</li>
+<li>垂直切分后，某些业务数据过于庞大，仍然存在单体性瓶颈</li>
+</ol>
+</blockquote>
+</li>
+<li><p>数据切分方式二：水平切分</p>
+<blockquote>
+<ul>
+<li>将一张表的数据按照某种规则分到不同的数据库中</li>
+<li>需确定分片的规则</li>
+<li>使用分片字段查询时，可确定实体库，其他字段查询，查询所有表</li>
+</ul>
+<p><img src="/images/2020/12/23/c8e97e95-f3b7-4c3c-89af-bf6060ec78af.png" alt="1607438687733"></p>
+<p>优点：</p>
+<ol>
+<li>解决了单库大数据、高并发的性能瓶颈</li>
+<li>拆分规则封装好，对应用端几乎透明，开发人员无需关心拆分细节</li>
+<li>提高了系统的稳定性和负载能力</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>拆分规则很难抽象</li>
+<li>分片事务一致性难以解决</li>
+<li>二次扩展时，数据迁移大、维护难度大</li>
+</ol>
+</blockquote>
+</li>
+<li><p>先垂直切分，再水平切分</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>实现读写分离和数据切分的两种方式</p>
+<ul>
+<li><p>模式一：中间层代理（MyCat）</p>
+<p><img src="/images/2020/12/23/d1fe67bc-565f-4679-a295-441b86edc04c.png" alt="1607437865475"></p>
+</li>
+<li><p>模式二：客户端模式（Sharding-jdbc）</p>
+<p><img src="/images/2020/12/23/8edb586f-8620-479b-8469-db65f715fe6b.png" alt="1607438085302"></p>
+</li>
+</ul>
+<h2 id="MyCat"><a href="#MyCat" class="headerlink" title="MyCat"></a>MyCat</h2><h3 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h3><ul>
+<li>mycat服务器： 192.168.1.2</li>
+<li>mysql服务器： 192.168.1.7；192.168.1.8</li>
+</ul>
+<h4 id="MySQL安装"><a href="#MySQL安装" class="headerlink" title="MySQL安装"></a>MySQL安装</h4><p>官网：<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/linux-installation-yum-repo.html#yum-repo-installing-mysql">https://dev.mysql.com/doc/refman/8.0/en/linux-installation-yum-repo.html#yum-repo-installing-mysql</a></p>
+<h4 id="mycat安装"><a href="#mycat安装" class="headerlink" title="mycat安装"></a>mycat安装</h4><p>官网：<a target="_blank" rel="noopener" href="http://dl.mycat.org.cn/">http://dl.mycat.org.cn/</a></p>
+<h3 id="用户配置"><a href="#用户配置" class="headerlink" title="用户配置"></a>用户配置</h3><h4 id="server-xml配置"><a href="#server-xml配置" class="headerlink" title="server.xml配置"></a>server.xml配置</h4><ul>
+<li>配置MyCat的用户名、密码、权限、Schema等；</li>
+<li>如同给MySQL新建用户一样</li>
+<li>客户端连接MyCat与连接MySQL相同</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">mycat:server</span> <span class="attr">xmlns:mycat</span>=<span class="string">&quot;http://io.mycat/&quot;</span>&gt;</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="tag">&lt;<span class="name">user</span> <span class="attr">name</span>=<span class="string">&quot;root&quot;</span> <span class="attr">defaultAccount</span>=<span class="string">&quot;true&quot;</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;password&quot;</span>&gt;</span>&#123;password&#125;<span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;schemas&quot;</span>&gt;</span>&#123;schema_name&#125;<span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">user</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">user</span> <span class="attr">name</span>=<span class="string">&quot;user&quot;</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;password&quot;</span>&gt;</span>user<span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;schemas&quot;</span>&gt;</span>&#123;schema_name&#125;<span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;readOnly&quot;</span>&gt;</span>true<span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">user</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">mycat:server</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="schema-xml配置"><a href="#schema-xml配置" class="headerlink" title="schema.xml配置"></a>schema.xml配置</h4><ul>
+<li>配置dataHost(节点主机)，包括读host、写host</li>
+<li>配置dataNode(数据节点)，指定到具体的数据库</li>
+<li>配置schema，表名、数据节点、分片规则等</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">mycat:schema</span> <span class="attr">xmlns:mycat</span>=<span class="string">&quot;http://io.mycat/&quot;</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">	checkSQLschema：是否去掉sql中的schema</span></span><br><span class="line"><span class="comment">	sqlMaxLimit：select默认的limit值，仅对分片表有效</span></span><br><span class="line"><span class="comment">	--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">schema</span> <span class="attr">name</span>=<span class="string">&quot;&#123;schema_name&#125;&quot;</span> <span class="attr">checkSQLschema</span>=<span class="string">&quot;true&quot;</span> <span class="attr">sqlMaxLimit</span>=<span class="string">&quot;100&quot;</span>&gt;</span></span><br><span class="line">    	<span class="comment">&lt;!--table：定义表</span></span><br><span class="line"><span class="comment">		name:定义逻辑表的表名</span></span><br><span class="line"><span class="comment">		dataNode: 定义逻辑表的数据节点</span></span><br><span class="line"><span class="comment">		rule:定义分片表的分片规则，必须与rule.xml中的tableRule对应</span></span><br><span class="line"><span class="comment">		ruleRequired：是否绑定分片规则，如果是true，没有绑定分片规则，程序报错</span></span><br><span class="line"><span class="comment">		--&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">table</span> <span class="attr">name</span>=<span class="string">&quot;&#123;table_name&#125;&quot;</span> <span class="attr">dataNode</span>=<span class="string">&quot;&#123;data_node_01&#125;,&#123;data_node_02&#125;&quot;</span> <span class="attr">rule</span>=<span class="string">&quot;auto-sharding-long&quot;</span> /&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">schema</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">	<span class="tag">&lt;<span class="name">dataNode</span> <span class="attr">name</span>=<span class="string">&quot;&#123;data_node_01&#125;&quot;</span> <span class="attr">dataHost</span>=<span class="string">&quot;&#123;data_host_01&#125;&quot;</span> <span class="attr">database</span>=<span class="string">&quot;&#123;database_01&#125;&quot;</span> /&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dataNode</span> <span class="attr">name</span>=<span class="string">&quot;&#123;data_node_02&#125;&quot;</span> <span class="attr">dataHost</span>=<span class="string">&quot;&#123;data_host_02&#125;&quot;</span> <span class="attr">database</span>=<span class="string">&quot;&#123;database_02&#125;&quot;</span> /&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">	balance: 负载均衡类型：0 不开启读写分离； 1和2读写均匀分配；3 读落在readHost上</span></span><br><span class="line"><span class="comment">	writeType： 写请求类型：0 落在第一个writeHost上；1 随机；</span></span><br><span class="line"><span class="comment">	--&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">dataHost</span> <span class="attr">name</span>=<span class="string">&quot;&#123;data_host_01&#125;&quot;</span> <span class="attr">maxCon</span>=<span class="string">&quot;1000&quot;</span> <span class="attr">minCon</span>=<span class="string">&quot;10&quot;</span> <span class="attr">balance</span>=<span class="string">&quot;0&quot;</span> <span class="attr">writeType</span>=<span class="string">&quot;0&quot;</span> <span class="attr">dbType</span>=<span class="string">&quot;mysql&quot;</span> <span class="attr">dbDriver</span>=<span class="string">&quot;native&quot;</span> <span class="attr">switchType</span>=<span class="string">&quot;1&quot;</span>  <span class="attr">slaveThreshold</span>=<span class="string">&quot;100&quot;</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">heartbeat</span>&gt;</span>select user()<span class="tag">&lt;/<span class="name">heartbeat</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">writeHost</span> <span class="attr">host</span>=<span class="string">&quot;&#123;host_name&#125;&quot;</span> <span class="attr">url</span>=<span class="string">&quot;&#123;mysql_ip:port&#125;&quot;</span> <span class="attr">user</span>=<span class="string">&quot;&#123;mysql_username&#125;&quot;</span> <span class="attr">password</span>=<span class="string">&quot;&#123;mysql_password&#125;&quot;</span> /&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">dataHost</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dataHost</span> <span class="attr">name</span>=<span class="string">&quot;&#123;data_host_02&#125;&quot;</span> <span class="attr">maxCon</span>=<span class="string">&quot;1000&quot;</span> <span class="attr">minCon</span>=<span class="string">&quot;10&quot;</span> <span class="attr">balance</span>=<span class="string">&quot;0&quot;</span> <span class="attr">writeType</span>=<span class="string">&quot;0&quot;</span> <span class="attr">dbType</span>=<span class="string">&quot;mysql&quot;</span> <span class="attr">dbDriver</span>=<span class="string">&quot;native&quot;</span> <span class="attr">switchType</span>=<span class="string">&quot;1&quot;</span>  <span class="attr">slaveThreshold</span>=<span class="string">&quot;100&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">heartbeat</span>&gt;</span>select user()<span class="tag">&lt;/<span class="name">heartbeat</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">writeHost</span> <span class="attr">host</span>=<span class="string">&quot;&#123;host_name&#125;&quot;</span> <span class="attr">url</span>=<span class="string">&quot;&#123;mysql_ip:port&#125;&quot;</span> <span class="attr">user</span>=<span class="string">&quot;&#123;mysql_username&#125;&quot;</span> <span class="attr">password</span>=<span class="string">&quot;&#123;mysql_password&#125;&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dataHost</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">mycat:schema</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="全局表"><a href="#全局表" class="headerlink" title="全局表"></a>全局表</h4><p>mysql中存在着地址，省份之类的数据，不需要进行进行切分操作，就称为全局表。全局表在每一个数据库中都存在一份，每个库中的数据都相同，这样保证了在join的时候只需要join本库的数据就可以了</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">mycat:schema</span> <span class="attr">xmlns:mycat</span>=<span class="string">&quot;http://io.mycat/&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">schema</span> <span class="attr">name</span>=<span class="string">&quot;&#123;schema_name&#125;&quot;</span> <span class="attr">checkSQLschema</span>=<span class="string">&quot;true&quot;</span> <span class="attr">sqlMaxLimit</span>=<span class="string">&quot;100&quot;</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- type: 指定为全局表--&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">table</span> <span class="attr">name</span>=<span class="string">&quot;&#123;table_name&#125;&quot;</span> <span class="attr">dataNode</span>=<span class="string">&quot;&#123;data_node_01&#125;,&#123;data_node_02&#125;&quot;</span> <span class="attr">type</span>=<span class="string">&quot;global&quot;</span> /&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">schema</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">mycat:schema</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h4 id="子表"><a href="#子表" class="headerlink" title="子表"></a>子表</h4><p>举个例子，项目中存在着订单表，订单表中对应着购买的商品信息表，做一个关联，如果订单表中对应的商品信息不在同一个库中，会存在着跨库的问题，所以商品信息表称为子表。</p>
+<ul>
+<li>childTable标签，定义分片子表</li>
+<li>name属性，子表名称</li>
+<li>joinKey属性，标志 子表中的列，用于与父表做关联</li>
+<li>parentKey标签，标志父表中的列，与joinKey对应</li>
+<li>primaryKey属性，子表主键，同table标签</li>
+<li>needAddLimit属性，同table标签</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">mycat:schema</span> <span class="attr">xmlns:mycat</span>=<span class="string">&quot;http://io.mycat/&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">schema</span> <span class="attr">name</span>=<span class="string">&quot;&#123;schema_name&#125;&quot;</span> <span class="attr">checkSQLschema</span>=<span class="string">&quot;true&quot;</span> <span class="attr">sqlMaxLimit</span>=<span class="string">&quot;100&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">table</span> <span class="attr">name</span>=<span class="string">&quot;&#123;order_table_name&#125;&quot;</span> <span class="attr">dataNode</span>=<span class="string">&quot;&#123;data_node_01&#125;,&#123;data_node_02&#125;&quot;</span> <span class="attr">rule</span>=<span class="string">&quot;auto-sharding-long&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">childTable</span> <span class="attr">name</span>=<span class="string">&quot;&#123;order_item_table_name&#125;&quot;</span> <span class="attr">joinKey</span>=<span class="string">&quot;&#123;order_join_id&#125;&quot;</span> <span class="attr">parentKey</span>=<span class="string">&quot;&#123;order_primary_id&#125;&quot;</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">table</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">schema</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">mycat:schema</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="重新加载配置"><a href="#重新加载配置" class="headerlink" title="重新加载配置"></a>重新加载配置</h3><ol>
+<li>连接mycat:9066管理端口</li>
+<li>在命令行中输入 show @@help; 命令，查看帮助命令</li>
+<li>reload @@config; 重新加载配置文件</li>
+<li>如果修改数据源配置，使用 reload @@config_all; 命令</li>
+</ol>
+<h3 id="MyCat的HA"><a href="#MyCat的HA" class="headerlink" title="MyCat的HA"></a>MyCat的HA</h3><p>使用keepalived+haproxy进行负载均衡</p>
+<p><img src="/images/2020/12/23/f42cf231-01e5-477f-98fe-6aede9b9917f.png" alt="1607529184798"></p>
+<h3 id="配置HAproxy"><a href="#配置HAproxy" class="headerlink" title="配置HAproxy"></a>配置HAproxy</h3><ol>
+<li><p>下载haproxy</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y haproxy</span><br></pre></td></tr></table></figure></li>
+<li><p>编辑haproxy配置文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/haproxy/haproxy.cfg</span><br></pre></td></tr></table></figure></li>
+<li><p>修改以下配置</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">defaults</span></span><br><span class="line">	<span class="attr">mode</span> <span class="string">tcp</span></span><br><span class="line"><span class="attr">backend</span> <span class="string">app</span></span><br><span class="line">	<span class="attr">balance</span>     <span class="string">roundrobin</span></span><br><span class="line">    <span class="attr">server</span>  <span class="string">app1 &lt;mycat_ip1:8066&gt; check</span></span><br><span class="line">    <span class="attr">server</span>  <span class="string">app2 &lt;mycat_ip2:8066&gt; check</span></span><br></pre></td></tr></table></figure></li>
+<li><p>启动haproxy</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">haproxy -f /etc/haproxy/haproxy.cfg</span><br></pre></td></tr></table></figure></li>
+<li><p>下载keepalived</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y keepalived</span><br></pre></td></tr></table></figure></li>
+<li><p>安装killall，用于keepalived的脚本执行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install psmisc -y</span><br></pre></td></tr></table></figure></li>
+<li><p>编辑配置文件 <code>/etc/keepalived/keepalived.conf</code></p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">global_defs</span> <span class="string">&#123;</span></span><br><span class="line">   <span class="attr">router_id</span> <span class="string">LVS_DEVEL</span></span><br><span class="line">   <span class="attr">vrrp_skip_check_adv_addr</span></span><br><span class="line">   <span class="attr">vrrp_garp_interval</span> <span class="string">0</span></span><br><span class="line">   <span class="attr">vrrp_gna_interval</span> <span class="string">0</span></span><br><span class="line"><span class="attr">&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">vrrp_script</span> <span class="string">chk_haproxy &#123;</span></span><br><span class="line">	<span class="attr">script</span> <span class="string">&quot;killall -0 haproxy&quot;</span></span><br><span class="line">	<span class="attr">interval</span> <span class="string">2</span></span><br><span class="line"><span class="attr">&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">vrrp_instance</span> <span class="string">VI_1 &#123;</span></span><br><span class="line">    <span class="attr">state</span> <span class="string">MASTER # 备机为BACKUP</span></span><br><span class="line">    <span class="attr">interface</span> <span class="string">ens33</span></span><br><span class="line">    <span class="attr">virtual_router_id</span> <span class="string">51</span></span><br><span class="line">    <span class="attr">priority</span> <span class="string">100</span></span><br><span class="line">    <span class="attr">advert_int</span> <span class="string">1</span></span><br><span class="line">    <span class="attr">authentication</span> <span class="string">&#123;</span></span><br><span class="line">        <span class="attr">auth_type</span> <span class="string">PASS</span></span><br><span class="line">        <span class="attr">auth_pass</span> <span class="string">1111</span></span><br><span class="line">    <span class="attr">&#125;</span></span><br><span class="line">    <span class="attr">virtual_ipaddress</span> <span class="string">&#123;</span></span><br><span class="line">        <span class="attr">&lt;vip&gt;</span></span><br><span class="line">    <span class="attr">&#125;</span></span><br><span class="line">    <span class="attr">track_script</span> <span class="string">&#123;</span></span><br><span class="line">    	<span class="attr">chk_haproxy</span></span><br><span class="line">    <span class="attr">&#125;</span></span><br><span class="line"><span class="attr">&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">virtual_server</span> <span class="string">&lt;vip&gt; &lt;port&gt; &#123;</span></span><br><span class="line">    <span class="attr">delay_loop</span> <span class="string">6</span></span><br><span class="line">    <span class="attr">lb_algo</span> <span class="string">rr</span></span><br><span class="line">    <span class="attr">lb_kind</span> <span class="string">NAT</span></span><br><span class="line">    <span class="attr">persistence_timeout</span> <span class="string">50</span></span><br><span class="line">    <span class="attr">protocol</span> <span class="string">TCP</span></span><br><span class="line"></span><br><span class="line">    <span class="attr">real_server</span> <span class="string">&lt;haproxy-ip&gt; &lt;port&gt; &#123;</span></span><br><span class="line">        <span class="attr">weight</span> <span class="string">1</span></span><br><span class="line">    <span class="attr">&#125;</span></span><br><span class="line"><span class="attr">&#125;</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h2 id="MySQL搭建主从"><a href="#MySQL搭建主从" class="headerlink" title="MySQL搭建主从"></a>MySQL搭建主从</h2><ol>
+<li><p>主库编辑my.cnf文件，然后重启主库服务器</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">log-bin</span>=<span class="string">&lt;bin_log_file_name&gt;</span></span><br><span class="line"><span class="meta">server-id</span>=<span class="string">1</span></span><br></pre></td></tr></table></figure></li>
+<li><p>从库编辑my.cnf文件，然后重启从库服务器</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">server-id</span>=<span class="string">2</span></span><br></pre></td></tr></table></figure></li>
+<li><p>在主库中创建一个从库用户</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">user</span> <span class="string">&#x27;repl&#x27;</span>@<span class="string">&#x27;%&#x27;</span> identified <span class="keyword">by</span> <span class="string">&#x27;&lt;slave_password&gt;&#x27;</span>;</span><br></pre></td></tr></table></figure></li>
+<li><p>给从库用户授权</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">grant</span> replication slave <span class="keyword">on</span> <span class="operator">*</span>.<span class="operator">*</span> <span class="keyword">to</span> <span class="string">&#x27;repl&#x27;</span>@<span class="string">&#x27;%&#x27;</span>;</span><br></pre></td></tr></table></figure></li>
+<li><p>主库刷新权限</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">flush privileges;</span><br></pre></td></tr></table></figure></li>
+<li><p>锁定主库</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">flush tables <span class="keyword">with</span> read lock;</span><br></pre></td></tr></table></figure></li>
+<li><p>读取主库bin-log状态</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> master status;</span><br></pre></td></tr></table></figure></li>
+<li><p>使用复制会话的方式新打开窗口，备份主库数据，在MySQL命令行外执行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldump --all-databases --master-data &gt; dbdump.db -uroot -p&lt;mysql_password&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>拷贝主库dump文件到从库</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp dbdump.db root@&lt;slave_ip&gt;:~/</span><br></pre></td></tr></table></figure></li>
+<li><p>在从库中执行命令写入db文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql &lt; dbdump.db -uroot -p&lt;mysql_password&gt;</span><br></pre></td></tr></table></figure></li>
+<li><p>在主库中解锁数据库</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">unlock tables;</span><br></pre></td></tr></table></figure></li>
+<li><p>在从库中设置配置</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">change master <span class="keyword">to</span> master_host<span class="operator">=</span><span class="string">&#x27;&lt;master_host&gt;&#x27;</span>, master_user<span class="operator">=</span><span class="string">&#x27;repl&#x27;</span>, master_password<span class="operator">=</span><span class="string">&#x27;&lt;slave_password&gt;&#x27;</span>, master_log_file<span class="operator">=</span><span class="string">&#x27;&lt;bin_log_file_name.no&gt;&#x27;</span>, master_log_pos<span class="operator">=</span><span class="operator">&lt;</span>bin_log_file_pos<span class="operator">&gt;</span>;</span><br></pre></td></tr></table></figure></li>
+<li><p>开启从库</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">start</span> slave;</span><br></pre></td></tr></table></figure>
+<h2 id="Sharding-jdbc"><a href="#Sharding-jdbc" class="headerlink" title="Sharding-jdbc"></a>Sharding-jdbc</h2></li>
+</ol>
+<ul>
+<li>一个开源的分布式的关系型数据库中间件</li>
+<li>客户端代理模式</li>
+<li>定位为轻量级的Java框架，以jar包提供服务</li>
+<li>可以理解为增强版的jdbc驱动</li>
+<li>完全兼容各种ORM框架</li>
+<li>提供四种配置方式：Java API 、yaml、SpringBoot和Spring命名空间</li>
+</ul>
+<p><img src="/images/2020/12/23/81e04ec8-c2aa-427e-b3f5-f317eaeab22f.png" alt="1607757775800"></p>
+<h3 id="与mycat的区别"><a href="#与mycat的区别" class="headerlink" title="与mycat的区别"></a>与mycat的区别</h3><ul>
+<li>MyCat是服务端代理，Sharding-Jdbc是客户端代理</li>
+<li>MyCat不支持同一库内的水平切分，Sharding-jdbc支持</li>
+</ul>
+<p>官网：<a target="_blank" rel="noopener" href="https://shardingsphere.apache.org/index_zh.html">https://shardingsphere.apache.org/index_zh.html</a></p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/" title="分库分表之sharding-jdbc&amp;mycat" target="_blank" rel="external">https://rabbit-mar.github.io/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+  
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: '分库分表之sharding-jdbc&amp;mycat',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>
