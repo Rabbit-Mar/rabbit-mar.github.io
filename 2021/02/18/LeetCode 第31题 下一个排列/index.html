@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>LeetCode 第31题:下一个排列 | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="31. 下一个排列实现获取下一个排列的函数，算法需要将给定数字序列重新排列成字典序中下一个更大的排列。如果不存在下一个更大的排列，则将数字重新排列成最小的排列（即升序排列）。必须原地修改，只允许使用额外常数空间。以下是一些例子，输入位于左侧列，其相应输出位于右侧列。1,2,3 → 1,3,23,2,1 → 1,2,31,1,5 → 1,5,1    题目来源：力扣（LeetCode）链接：http">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LeetCode 第31题:下一个排列">
+<meta property="og:url" content="https://rabbit-mar.github.io/2021/02/18/LeetCode%20%E7%AC%AC31%E9%A2%98%20%E4%B8%8B%E4%B8%80%E4%B8%AA%E6%8E%92%E5%88%97/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="31. 下一个排列实现获取下一个排列的函数，算法需要将给定数字序列重新排列成字典序中下一个更大的排列。如果不存在下一个更大的排列，则将数字重新排列成最小的排列（即升序排列）。必须原地修改，只允许使用额外常数空间。以下是一些例子，输入位于左侧列，其相应输出位于右侧列。1,2,3 → 1,3,23,2,1 → 1,2,31,1,5 → 1,5,1    题目来源：力扣（LeetCode）链接：http">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://img.marvr.top/upload/images/2020/05/16/6113998b-98d0-417e-8fdf-8a1cce3c5197.jpg">
+<meta property="og:image" content="http://img.marvr.top/upload/images/2020/05/16/adf638b6-4ccc-4bb2-9b31-022d11c6e745.jpg">
+<meta property="og:image" content="http://img.marvr.top/upload/images/2020/05/16/1b2a0587-bf22-4a8a-ab8b-a79e288977fd.jpg">
+<meta property="article:published_time" content="2021-02-18T11:51:01.000Z">
+<meta property="article:modified_time" content="2021-02-18T11:53:05.241Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="LeetCode">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://img.marvr.top/upload/images/2020/05/16/6113998b-98d0-417e-8fdf-8a1cce3c5197.jpg">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2021/02/18/LeetCode%20%E7%AC%AC31%E9%A2%98%20%E4%B8%8B%E4%B8%80%E4%B8%AA%E6%8E%92%E5%88%97/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">二月 2021</a><span class="archive-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2021/02/18/LeetCode%20%E7%AC%AC31%E9%A2%98%20%E4%B8%8B%E4%B8%80%E4%B8%AA%E6%8E%92%E5%88%97/"
+              class="title">LeetCode 第31题:下一个排列</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2021-02-18T11:51:01.000Z" itemprop="datePublished">2021-02-18</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2021/02/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%B8%80)%E2%80%94%E2%80%94Redis%E7%9A%84%E5%AE%89%E8%A3%85/"
+              class="title">Redis学习之路(一)——Redis的安装</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2021-02-18T11:07:45.000Z" itemprop="datePublished">2021-02-18</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-LeetCode 第31题 下一个排列" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      LeetCode 第31题:下一个排列
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2021/02/18/LeetCode%20%E7%AC%AC31%E9%A2%98%20%E4%B8%8B%E4%B8%80%E4%B8%AA%E6%8E%92%E5%88%97/" class="article-date">
+	  <time datetime="2021-02-18T11:51:01.000Z" itemprop="datePublished">2021-02-18</time>
+	</a>
+</span>
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/LeetCode/" rel="tag">LeetCode</a>
+  </span>
+
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021/02/18/LeetCode%20%E7%AC%AC31%E9%A2%98%20%E4%B8%8B%E4%B8%80%E4%B8%AA%E6%8E%92%E5%88%97/#comments" class="article-comment-link">评论</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h2 id="31-下一个排列"><a href="#31-下一个排列" class="headerlink" title="31. 下一个排列"></a>31. 下一个排列</h2><p>实现获取下一个排列的函数，算法需要将给定数字序列重新排列成字典序中下一个更大的排列。<br>如果不存在下一个更大的排列，则将数字重新排列成最小的排列（即升序排列）。<br>必须原地修改，只允许使用额外常数空间。<br>以下是一些例子，输入位于左侧列，其相应输出位于右侧列。<br>1,2,3 → 1,3,2<br>3,2,1 → 1,2,3<br>1,1,5 → 1,5,1  </p>
+<blockquote>
+<p>题目来源：力扣（LeetCode）<br>链接：<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/next-permutation">https://leetcode-cn.com/problems/next-permutation</a><br>著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。  </p>
+</blockquote>
+<h3 id="题目分析"><a href="#题目分析" class="headerlink" title="题目分析"></a>题目分析</h3><p>输入一串数组例如  </p>
+<table>
+<thead>
+<tr>
+<th align="center">nums</th>
+<th align="center">1</th>
+<th align="center">2</th>
+<th align="center">4</th>
+<th align="center">3</th>
+<th align="center">2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">index</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">3</td>
+<td align="center">4</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">找出下一个更大的排列，即</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th align="center">nums</th>
+<th align="center">1</th>
+<th align="center">3</th>
+<th align="center">2</th>
+<th align="center">2</th>
+<th align="center">4</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">index</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">3</td>
+<td align="center">4</td>
+</tr>
+</tbody></table>
+<p>可以找打规律<strong>从右向左</strong>遍历，找到一个拐点的时候，如上例所示，即 2、4、3、2<br>2在2、3、4这样的逆序排列中，突然递减，此时可以找到一个更大的排列<br><img src="http://img.marvr.top/upload/images/2020/05/16/6113998b-98d0-417e-8fdf-8a1cce3c5197.jpg"></p>
+<blockquote>
+<p>如图所示，只需要找到2之后的节点，并且离2最接近的节点进行交换  </p>
+</blockquote>
+<p><img src="http://img.marvr.top/upload/images/2020/05/16/adf638b6-4ccc-4bb2-9b31-022d11c6e745.jpg"></p>
+<blockquote>
+<p>然后将3之后的节点进行排序，就拿到了1、3、2、2、4这个顺序</p>
+</blockquote>
+<p><img src="http://img.marvr.top/upload/images/2020/05/16/1b2a0587-bf22-4a8a-ab8b-a79e288977fd.jpg"></p>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">nextPermutation</span><span class="params">(<span class="keyword">int</span>[] nums)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> len = nums.length;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = len - <span class="number">1</span>; i &gt; <span class="number">0</span>; i--) &#123;</span><br><span class="line">		<span class="keyword">if</span> (nums[i-<span class="number">1</span>] &lt; nums[i]) &#123;</span><br><span class="line">		    <span class="keyword">int</span> aim = getClosestNum(nums, i-<span class="number">1</span>);</span><br><span class="line">			swap(nums, i-<span class="number">1</span>, aim);</span><br><span class="line">			Arrays.sort(nums, i, len);</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 降序排列</span></span><br><span class="line">	Arrays.sort(nums);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 交换</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">swap</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> source, <span class="keyword">int</span> target)</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> tmp = nums[source];</span><br><span class="line">	nums[source] = nums[target];</span><br><span class="line">	nums[target] = tmp;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getClosestNum</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> idx)</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> len = nums.length;</span><br><span class="line">	<span class="keyword">int</span> seek = idx + <span class="number">2</span>; <span class="comment">// 游标i</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> aim = idx+<span class="number">1</span>; <span class="comment">// 初始化最接近的下标</span></span><br><span class="line">	<span class="keyword">int</span> gap = nums[aim] - nums[idx];<span class="comment">//差值</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 开始遍历后续节点，找到最接近拐点前的那个值</span></span><br><span class="line">	<span class="keyword">while</span> (seek &lt;= len-<span class="number">1</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> (nums[seek] &gt; nums[idx] &amp;&amp; (nums[seek] - nums[idx]) &lt; gap) &#123;</span><br><span class="line">			aim = seek;</span><br><span class="line">			gap = nums[seek] - nums[idx];</span><br><span class="line">		&#125;</span><br><span class="line">		seek++;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> aim;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2021/02/18/LeetCode%20%E7%AC%AC31%E9%A2%98%20%E4%B8%8B%E4%B8%80%E4%B8%AA%E6%8E%92%E5%88%97/" title="LeetCode 第31题:下一个排列" target="_blank" rel="external">https://rabbit-mar.github.io/2021/02/18/LeetCode%20%E7%AC%AC31%E9%A2%98%20%E4%B8%8B%E4%B8%80%E4%B8%AA%E6%8E%92%E5%88%97/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: 'LeetCode 第31题:下一个排列',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>
