@@ -264,9 +264,9 @@
     
     <category term="Redis" scheme="https://rabbit-mar.github.io/tags/Redis/"/>
     
-    <category term="Java" scheme="https://rabbit-mar.github.io/tags/Java/"/>
-    
     <category term="SpringBoot" scheme="https://rabbit-mar.github.io/tags/SpringBoot/"/>
+    
+    <category term="Java" scheme="https://rabbit-mar.github.io/tags/Java/"/>
     
   </entry>
   
