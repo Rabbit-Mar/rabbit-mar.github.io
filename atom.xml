@@ -6,7 +6,7 @@
   <link href="https://rabbit-mar.github.io/atom.xml" rel="self"/>
   
   <link href="https://rabbit-mar.github.io/"/>
-  <updated>2021-02-18T15:07:06.013Z</updated>
+  <updated>2021-02-19T08:59:47.941Z</updated>
   <id>https://rabbit-mar.github.io/</id>
   
   <author>
@@ -15,6 +15,23 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Kafka官网翻译——起步</title>
+    <link href="https://rabbit-mar.github.io/2021/02/19/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%B5%B7%E6%AD%A5/"/>
+    <id>https://rabbit-mar.github.io/2021/02/19/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%B5%B7%E6%AD%A5/</id>
+    <published>2021-02-19T03:18:08.000Z</published>
+    <updated>2021-02-19T08:59:47.941Z</updated>
+    
+    
+    <summary type="html">Kafka官网翻译，对应版本为2.7.x，网址：https://kafka.apache.org/27/documentation.html#gettingStarted</summary>
+    
+    
+    
+    
+    <category term="Kafka" scheme="https://rabbit-mar.github.io/tags/Kafka/"/>
+    
+  </entry>
   
   <entry>
     <title>分库分表之sharding-jdbc&amp;mycat</title>
@@ -247,9 +264,9 @@
     
     <category term="Redis" scheme="https://rabbit-mar.github.io/tags/Redis/"/>
     
-    <category term="Java" scheme="https://rabbit-mar.github.io/tags/Java/"/>
-    
     <category term="SpringBoot" scheme="https://rabbit-mar.github.io/tags/SpringBoot/"/>
+    
+    <category term="Java" scheme="https://rabbit-mar.github.io/tags/Java/"/>
     
   </entry>
   
@@ -347,23 +364,6 @@
     
     
     <summary type="html">NGINX详解第三章——NGINX相关配置介绍</summary>
-    
-    
-    
-    
-    <category term="Nginx" scheme="https://rabbit-mar.github.io/tags/Nginx/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>NGINX详解二：NGINX基本资料</title>
-    <link href="https://rabbit-mar.github.io/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E4%BA%8C%EF%BC%9ANGINX%E5%9F%BA%E6%9C%AC%E8%B5%84%E6%96%99/"/>
-    <id>https://rabbit-mar.github.io/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E4%BA%8C%EF%BC%9ANGINX%E5%9F%BA%E6%9C%AC%E8%B5%84%E6%96%99/</id>
-    <published>2020-11-05T21:45:18.000Z</published>
-    <updated>2021-02-18T14:52:49.445Z</updated>
-    
-    
-    <summary type="html">NGINX详解第二章——NGINX的基本资料：进程模型、worker抢占机制、事件机制</summary>
     
     
     
