@@ -6,7 +6,7 @@
   <link href="https://rabbit-mar.github.io/atom.xml" rel="self"/>
   
   <link href="https://rabbit-mar.github.io/"/>
-  <updated>2021-02-19T09:02:57.360Z</updated>
+  <updated>2021-02-20T06:37:28.977Z</updated>
   <id>https://rabbit-mar.github.io/</id>
   
   <author>
@@ -15,6 +15,23 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Kafka官网翻译——API</title>
+    <link href="https://rabbit-mar.github.io/2021/02/20/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94API/"/>
+    <id>https://rabbit-mar.github.io/2021/02/20/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94API/</id>
+    <published>2021-02-20T06:06:43.000Z</published>
+    <updated>2021-02-20T06:37:28.977Z</updated>
+    
+    
+    <summary type="html">Kafka官网翻译，对应版本为2.7.x，网址：https://kafka.apache.org/27/documentation.html#api</summary>
+    
+    
+    
+    
+    <category term="Kafka" scheme="https://rabbit-mar.github.io/tags/Kafka/"/>
+    
+  </entry>
   
   <entry>
     <title>Kafka官网翻译——起步</title>
@@ -262,11 +279,11 @@
     
     
     
-    <category term="Redis" scheme="https://rabbit-mar.github.io/tags/Redis/"/>
+    <category term="Java" scheme="https://rabbit-mar.github.io/tags/Java/"/>
     
     <category term="SpringBoot" scheme="https://rabbit-mar.github.io/tags/SpringBoot/"/>
     
-    <category term="Java" scheme="https://rabbit-mar.github.io/tags/Java/"/>
+    <category term="Redis" scheme="https://rabbit-mar.github.io/tags/Redis/"/>
     
   </entry>
   
@@ -347,23 +364,6 @@
     
     
     <summary type="html">NGINX详解第四章——NGINX的负载均衡</summary>
-    
-    
-    
-    
-    <category term="Nginx" scheme="https://rabbit-mar.github.io/tags/Nginx/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>NGINX详解三：NGINX配置</title>
-    <link href="https://rabbit-mar.github.io/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E4%B8%89%EF%BC%9ANGINX%E9%85%8D%E7%BD%AE/"/>
-    <id>https://rabbit-mar.github.io/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E4%B8%89%EF%BC%9ANGINX%E9%85%8D%E7%BD%AE/</id>
-    <published>2020-11-05T21:50:23.000Z</published>
-    <updated>2021-02-18T14:52:49.737Z</updated>
-    
-    
-    <summary type="html">NGINX详解第三章——NGINX相关配置介绍</summary>
     
     
     

@@ -15,23 +15,23 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>Redis学习之路(三)——Redis基础资料 | Marveal Rabbit - Coder&#39;s Blog</title>
-  <meta name="description" content="Redis计算向数据移动、Redis实现步骤、Redis单线程、Redis连接池">
+  <title>Kafka官网翻译——API | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="Kafka官网翻译，对应版本为2.7.x，网址：https:&#x2F;&#x2F;kafka.apache.org&#x2F;27&#x2F;documentation.html#api">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Redis学习之路(三)——Redis基础资料">
-<meta property="og:url" content="https://rabbit-mar.github.io/2020/05/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%B8%89)%E2%80%94%E2%80%94Redis%E5%9F%BA%E7%A1%80%E8%B5%84%E6%96%99/index.html">
+<meta property="og:title" content="Kafka官网翻译——API">
+<meta property="og:url" content="https://rabbit-mar.github.io/2021/02/20/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94API/index.html">
 <meta property="og:site_name" content="Marveal Rabbit">
-<meta property="og:description" content="Redis计算向数据移动、Redis实现步骤、Redis单线程、Redis连接池">
+<meta property="og:description" content="Kafka官网翻译，对应版本为2.7.x，网址：https:&#x2F;&#x2F;kafka.apache.org&#x2F;27&#x2F;documentation.html#api">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://picsum.photos/1080/400">
-<meta property="article:published_time" content="2020-05-18T02:27:48.000Z">
-<meta property="article:modified_time" content="2021-02-18T13:59:11.788Z">
+<meta property="article:published_time" content="2021-02-20T06:06:43.000Z">
+<meta property="article:modified_time" content="2021-02-20T06:37:28.977Z">
 <meta property="article:author" content="Marveal Rabbit">
-<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="Kafka">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://picsum.photos/1080/400">
   <!-- Canonical links -->
-  <link rel="canonical" href="https://rabbit-mar.github.io/2020/05/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%B8%89)%E2%80%94%E2%80%94Redis%E5%9F%BA%E7%A1%80%E8%B5%84%E6%96%99/index.html">
+  <link rel="canonical" href="https://rabbit-mar.github.io/2021/02/20/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94API/index.html">
   
     <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
   
@@ -277,13 +277,13 @@
   
 <main class="main" role="main">
   <div class="content">
-  <article id="post-Redis学习之路(三)——Redis基础资料" class="article article-type-post" itemscope
+  <article id="post-Kafka官网翻译——API" class="article article-type-post" itemscope
     itemtype="http://schema.org/BlogPosting">
     
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_ckldcok8l001dld02h7xy5git noopener">
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_ckldcok7v0001ld0291qd10za noopener">
         <img src="https://picsum.photos/1080/400" style="border-radius: 8px;" itemprop="image">
       </a>
     
@@ -295,7 +295,7 @@
       
   
     <h1 class="article-title" itemprop="name">
-      Redis学习之路(三)——Redis基础资料
+      Kafka官网翻译——API
     </h1>
   
 
@@ -303,14 +303,14 @@
       <div class="article-meta">
         <span class="article-date">
     <i class="icon icon-calendar-check"></i>
-	<a href="/2020/05/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%B8%89)%E2%80%94%E2%80%94Redis%E5%9F%BA%E7%A1%80%E8%B5%84%E6%96%99/" class="article-date">
-	  <time datetime="2020-05-18T02:27:48.000Z" itemprop="datePublished">2020年05月18日10时</time>
+	<a href="/2021/02/20/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94API/" class="article-date">
+	  <time datetime="2021-02-20T06:06:43.000Z" itemprop="datePublished">2021年02月20日14时</time>
 	</a>
 </span>
         
   <span class="article-tag">
     <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/Redis/" rel="tag">Redis</a>
+	<a class="article-tag-link-link" href="/tags/Kafka/" rel="tag">Kafka</a>
   </span>
 
 
@@ -326,36 +326,52 @@
 
 <span class="post-wordcount hidden-xs" itemprop="wordCount"><i
 		class="icon icon-search"></i>&nbsp;字数统计:
-	701(字)</span>
+	750(字)</span>
 
 
 <span class="post-readcount hidden-xs" itemprop="timeRequired"><i
 		class="icon icon-clock"></i>&nbsp;阅读时长:
-	2(分)</span>
+	3(分)</span>
 
 
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2020/05/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%B8%89)%E2%80%94%E2%80%94Redis%E5%9F%BA%E7%A1%80%E8%B5%84%E6%96%99/#comments"
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021/02/20/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94API/#comments"
             class="article-comment-link">评论</a></span>
       </div>
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-      <h1 id="Redis-基础资料"><a href="#Redis-基础资料" class="headerlink" title="Redis 基础资料"></a>Redis 基础资料</h1><h2 id="1-数据向计算移动-or-计算向数据移动"><a href="#1-数据向计算移动-or-计算向数据移动" class="headerlink" title="1. 数据向计算移动 or 计算向数据移动"></a>1. 数据向计算移动 or 计算向数据移动</h2><h3 id="1-1-数据向计算移动"><a href="#1-1-数据向计算移动" class="headerlink" title="1.1 数据向计算移动"></a>1.1 数据向计算移动</h3><p>memcached只能存储字符串类型，当客户端发送一个”set a {a,b,c,d}”的命令时，memcached会记录字符串类型的{a,b,c,d}，但是当客户端想要获取a数据中下标为2的数据时，客户端发送指令“get a”，memcached会将整个字符串返回，客户端会拿到{a,b,c,d}，然后通过json反序列化的方式，将字符串类型的数据类型转换为数组类型，然后通过下标方式获取到c字符。  </p>
-<p><img src="/images/2020/05/18/a3657c71-45a1-43b1-af93-716ccc0ec0a1.png"></p>
-<h3 id="1-2-计算向数据移动"><a href="#1-2-计算向数据移动" class="headerlink" title="1.2 计算向数据移动"></a>1.2 计算向数据移动</h3><p>redis可以存储五大数据类型，当客户端发送一个”lpush a {a,b,c,d}”时，redis会将其识别为数组类型。当客户端想要获取a数据下标为2的数据时，发送指令“lindex a 2”，redis会调用本地方法index(2)直接获取到a数组中下标为2的数据c。客户端拿到的数据就是已经通过计算的数据  </p>
-<p><img src="/images/2020/05/18/80e35541-9032-47a4-a28b-822a2701e27c.png"></p>
-<h2 id="2-Redis-实现步骤"><a href="#2-Redis-实现步骤" class="headerlink" title="2. Redis 实现步骤"></a>2. Redis 实现步骤</h2><p>多个客户端发送消息到操作系统内核kernel，redis去问多路复用器epoll有几个客户端发送了消息，然后redis worker单线程到kernel取数据，然后再到redis本地方法进行计算。  </p>
-<p><img src="/images/2020/05/18/59b8e989-283a-44c2-bdc0-fcfc337e07bf.png"></p>
-<h2 id="3-Redis-单线程好还是多线程好"><a href="#3-Redis-单线程好还是多线程好" class="headerlink" title="3. Redis 单线程好还是多线程好"></a>3. Redis 单线程好还是多线程好</h2><p>多个客户端高并发访问service时，会先通过负载均衡器（例如nginx），由负载均衡器将请求发送到不同的service机器上，并行执行，如果说db层只有数据库，那么很容易就会造成脏读，为了保证数据一致性，就只有通过加锁的方式，让service进行一个排队处理，但是加锁的弊端就会暴露出来，涉及到性能的损耗（内核态和用户态的切换）  </p>
-<p><img src="/images/2020/05/18/4456c670-842f-4dd1-b67d-62cb74de1f8c.png"></p>
-<p>如果说把db换成redis，由于redis是单线程操作，所以就形成了串行化操作。  </p>
-<p><img src="/images/2020/05/18/c9511e41-e18c-4a93-b3cf-65a4f35a96dd.png"></p>
-<p>同样是多个客户端发送数据到操作系统kernel内核上，epoll感知到数据到了，redis worker线程取数据，但是cpu的利用率不高，单个线程对应cpu单核操作，为了提高cpu利用率redis在6.x之后进行了升级。  </p>
-<p><img src="/images/2020/05/18/472f7c77-c465-4174-89de-78f55b9bb898.png"></p>
-<p>redis升级过后采用了io threads，但是不是默认的，需要开启，多线程进行读取操作，由worker单线程进行计算，计算后再由io thread写回。  </p>
-<p><img src="/images/2020/05/18/ba1444cf-6002-46ac-b6ed-a2da3d9660a2.png"></p>
-<h2 id="4-连接池和线程池"><a href="#4-连接池和线程池" class="headerlink" title="4. 连接池和线程池"></a>4. 连接池和线程池</h2><p>连接池本质是一个list，里面存放着N多个socket，这一个list可以用线程池进行处理，线程池里面也可以只有一个线程，这就涉及到NIO，多路复用和epoll等知识</p>
-<p><img src="/images/2020/05/18/72785fb0-24e0-4d24-ad3b-d5ba5a073582.png"></p>
+      <h1 id="APIs"><a href="#APIs" class="headerlink" title="APIs"></a>APIs</h1><p>Kafka有五个核心api：</p>
+<ul>
+<li>Producer API允许应用程序将数据流发送到Kafka集群中的topics。</li>
+<li>Consumer API允许应用程序从Kafka集群中的topic读取数据流。</li>
+<li>Streams API允许将数据流从输入topic转换为输出topic。</li>
+<li>Connect API允许实现连接器，这些连接器不断地从一些源系统或应用程序拉入到Kafka，或从Kafka推入到一些下游数据系统或应用程序。</li>
+<li>Admin API允许管理和检查topic，broker和其他Kafka对象。</li>
+</ul>
+<p>Kafka通过与语言无关的协议公开其所有功能，该协议具有可用于多种编程语言的客户端。 但是，只有Java客户端是作为Kafka主项目的一部分维护的，其他Java客户端则可以作为独立的开源项目使用。 非Java客户端列表在<a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/KAFKA/Clients">此处</a>提供。</p>
+<h2 id="2-1-Producer-API"><a href="#2-1-Producer-API" class="headerlink" title="2.1 Producer API"></a>2.1 Producer API</h2><p>Producer API允许应用程序将数据流发送到Kafka集群中的topics。</p>
+<p>使用生产者的事例在<a target="_blank" rel="noopener" href="https://kafka.apache.org/27/javadoc/index.html?org/apache/kafka/clients/producer/KafkaProducer.html">javadocs</a>中给出</p>
+<p>使用生产者api，需要添加以下maven依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.kafka<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>kafka-clients<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.7.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-2-Consumer-API"><a href="#2-2-Consumer-API" class="headerlink" title="2.2 Consumer API"></a>2.2 Consumer API</h3><p>Consumer API允许应用程序从Kafka集群中的topic读取数据流。</p>
+<p>使用消费者的事例在<a target="_blank" rel="noopener" href="https://kafka.apache.org/27/javadoc/index.html?org/apache/kafka/clients/consumer/KafkaConsumer.html">javadocs</a>中给出</p>
+<p>使用消费者api，需要添加以下maven依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.kafka<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>kafka-clients<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.7.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="2-3-Streams-API"><a href="#2-3-Streams-API" class="headerlink" title="2.3 Streams API"></a>2.3 Streams API</h2><p>Streams API允许将数据流从输入topic转换为输出topic。</p>
+<p>使用库的事例在<a target="_blank" rel="noopener" href="https://kafka.apache.org/27/javadoc/index.html?org/apache/kafka/streams/KafkaStreams.html">javadocs</a>中给出</p>
+<p>使用streams api的额外文档在<a target="_blank" rel="noopener" href="https://kafka.apache.org/27/documentation/streams/">这里</a></p>
+<p>使用streams api，需要添加以下maven依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.kafka<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>kafka-streams<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.7.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>如果需要使用Scala需要添加 <code>kafka-streams-scala</code> 库，使用Kafka Streams DSL的Scala文档在<a target="_blank" rel="noopener" href="https://kafka.apache.org/27/documentation/streams/developer-guide/dsl-api.html#scala-dsl">开发者文档</a>中</p>
+<p>如果使用Scala2.13的Kafka Streams DSL，需要添加一下依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.kafka<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>kafka-streams-scala_2.13<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.7.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="2-4-Connect-API"><a href="#2-4-Connect-API" class="headerlink" title="2.4 Connect API"></a>2.4 Connect API</h2><p>Connect API允许实现连接器，这些连接器不断地从一些源系统或应用程序拉入到Kafka，或从Kafka推入到一些下游数据系统或应用程序。</p>
+<p>很多的连接用户不需要直接使用这些api，他们使用这些预编译的连接器不需要编写代码，使用连接器的额外信息在文档的连接器部分</p>
+<p>如何实现自定义的连接器可以看<a target="_blank" rel="noopener" href="https://kafka.apache.org/27/javadoc/index.html?org/apache/kafka/connect">javadoc</a></p>
+<h2 id="2-5-Admin-API"><a href="#2-5-Admin-API" class="headerlink" title="2.5 Admin API"></a>2.5 Admin API</h2><p>Admin API允许管理和检查topic，broker，acl和其他Kafka对象。</p>
+<p>关于更多的admin apis信息，查看<a target="_blank" rel="noopener" href="https://kafka.apache.org/27/javadoc/index.html?org/apache/kafka/clients/admin/Admin.html">javadoc</a></p>
+<p>使用admin api，需要添加以下依赖：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.kafka<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>kafka-clients<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.7.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -365,7 +381,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="https://rabbit-mar.github.io/2020/05/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%B8%89)%E2%80%94%E2%80%94Redis%E5%9F%BA%E7%A1%80%E8%B5%84%E6%96%99/" title="Redis学习之路(三)——Redis基础资料" target="_blank" rel="external">https://rabbit-mar.github.io/2020/05/18/Redis%E5%AD%A6%E4%B9%A0%E4%B9%8B%E8%B7%AF(%E4%B8%89)%E2%80%94%E2%80%94Redis%E5%9F%BA%E7%A1%80%E8%B5%84%E6%96%99/</a>
+      <a href="https://rabbit-mar.github.io/2021/02/20/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94API/" title="Kafka官网翻译——API" target="_blank" rel="external">https://rabbit-mar.github.io/2021/02/20/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94API/</a>
     </li>
     
     <li class="post-copyright-license">
@@ -471,7 +487,7 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
 <script>
   var gitment = new Gitment({
-    id: 'Redis学习之路(三)——Redis基础资料',
+    id: 'Kafka官网翻译——API',
     owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
     repo: 'rabbit-mar.github.io',
     oauth: {
