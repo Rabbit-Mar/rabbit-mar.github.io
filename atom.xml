@@ -6,7 +6,7 @@
   <link href="https://rabbit-mar.github.io/atom.xml" rel="self"/>
   
   <link href="https://rabbit-mar.github.io/"/>
-  <updated>2021-02-20T06:37:28.977Z</updated>
+  <updated>2021-02-24T08:18:59.849Z</updated>
   <id>https://rabbit-mar.github.io/</id>
   
   <author>
@@ -15,6 +15,23 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>设计模式——单例模式</title>
+    <link href="https://rabbit-mar.github.io/2021/02/24/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/"/>
+    <id>https://rabbit-mar.github.io/2021/02/24/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</id>
+    <published>2021-02-24T08:17:16.000Z</published>
+    <updated>2021-02-24T08:18:59.849Z</updated>
+    
+    
+    <summary type="html">介绍设计模式中最简单中的一种——单例模式，具体介绍其实现和破坏单例模式的三种场景，包括使用ThreadLocal实现线程内的单例</summary>
+    
+    
+    
+    
+    <category term="设计模式" scheme="https://rabbit-mar.github.io/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"/>
+    
+  </entry>
   
   <entry>
     <title>Kafka官网翻译——API</title>
@@ -279,11 +296,11 @@
     
     
     
-    <category term="Java" scheme="https://rabbit-mar.github.io/tags/Java/"/>
+    <category term="Redis" scheme="https://rabbit-mar.github.io/tags/Redis/"/>
     
     <category term="SpringBoot" scheme="https://rabbit-mar.github.io/tags/SpringBoot/"/>
     
-    <category term="Redis" scheme="https://rabbit-mar.github.io/tags/Redis/"/>
+    <category term="Java" scheme="https://rabbit-mar.github.io/tags/Java/"/>
     
   </entry>
   
@@ -347,23 +364,6 @@
     
     
     <summary type="html">NGINX详解第五章——NGINX中的缓存</summary>
-    
-    
-    
-    
-    <category term="Nginx" scheme="https://rabbit-mar.github.io/tags/Nginx/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>NGINX详解四：负载均衡</title>
-    <link href="https://rabbit-mar.github.io/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E5%9B%9B%EF%BC%9A%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/"/>
-    <id>https://rabbit-mar.github.io/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E5%9B%9B%EF%BC%9A%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/</id>
-    <published>2020-11-05T21:56:07.000Z</published>
-    <updated>2021-02-18T14:52:49.771Z</updated>
-    
-    
-    <summary type="html">NGINX详解第四章——NGINX的负载均衡</summary>
     
     
     
