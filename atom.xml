@@ -6,7 +6,7 @@
   <link href="https://rabbit-mar.github.io/atom.xml" rel="self"/>
   
   <link href="https://rabbit-mar.github.io/"/>
-  <updated>2021-02-25T09:24:10.780Z</updated>
+  <updated>2021-02-25T09:25:58.368Z</updated>
   <id>https://rabbit-mar.github.io/</id>
   
   <author>
@@ -21,13 +21,15 @@
     <link href="https://rabbit-mar.github.io/2021/02/25/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1(%E4%B8%8A)/"/>
     <id>https://rabbit-mar.github.io/2021/02/25/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1(%E4%B8%8A)/</id>
     <published>2021-02-25T09:23:26.000Z</published>
-    <updated>2021-02-25T09:24:10.780Z</updated>
+    <updated>2021-02-25T09:25:58.368Z</updated>
     
     
-    <summary type="html">描述</summary>
+    <summary type="html">Kafka官网翻译，对应版本为2.7.x，网址：https://kafka.apache.org/documentation/#design</summary>
     
     
     
+    
+    <category term="Kafka" scheme="https://rabbit-mar.github.io/tags/Kafka/"/>
     
   </entry>
   

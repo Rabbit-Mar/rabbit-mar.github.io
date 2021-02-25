@@ -16,18 +16,18 @@
   
   
   <title>Kafka官网翻译——设计(上) | Marveal Rabbit - Coder&#39;s Blog</title>
-  <meta name="description" content="描述">
+  <meta name="description" content="Kafka官网翻译，对应版本为2.7.x，网址：https:&#x2F;&#x2F;kafka.apache.org&#x2F;documentation&#x2F;#design">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Kafka官网翻译——设计(上)">
 <meta property="og:url" content="https://rabbit-mar.github.io/2021/02/25/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1(%E4%B8%8A)/index.html">
 <meta property="og:site_name" content="Marveal Rabbit">
-<meta property="og:description" content="描述">
+<meta property="og:description" content="Kafka官网翻译，对应版本为2.7.x，网址：https:&#x2F;&#x2F;kafka.apache.org&#x2F;documentation&#x2F;#design">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://picsum.photos/1080/400">
 <meta property="article:published_time" content="2021-02-25T09:23:26.000Z">
-<meta property="article:modified_time" content="2021-02-25T09:24:10.780Z">
+<meta property="article:modified_time" content="2021-02-25T09:25:58.368Z">
 <meta property="article:author" content="Marveal Rabbit">
-<meta property="article:tag" content="marveal,Marveal Rabbit,rabbit-mar,mar-rab,MR,marvr,blog,个人博客,博客网站">
+<meta property="article:tag" content="Kafka">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://picsum.photos/1080/400">
   <!-- Canonical links -->
@@ -178,7 +178,7 @@
   <div class="widget">
     <h3 class="widget-title">标签</h3>
     <div class="widget-body">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -283,7 +283,7 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklknu1n6005g8f024fhw40x6 noopener">
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklknwbim005abg0271tn2p46 noopener">
         <img src="https://picsum.photos/1080/400" style="border-radius: 8px;" itemprop="image">
       </a>
     
@@ -308,6 +308,11 @@
 	</a>
 </span>
         
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/Kafka/" rel="tag">Kafka</a>
+  </span>
+
 
         
 	<span class="article-read hidden-xs">
