@@ -6,7 +6,7 @@
   <link href="https://rabbit-mar.github.io/atom.xml" rel="self"/>
   
   <link href="https://rabbit-mar.github.io/"/>
-  <updated>2021-02-24T08:18:59.849Z</updated>
+  <updated>2021-02-25T09:24:10.780Z</updated>
   <id>https://rabbit-mar.github.io/</id>
   
   <author>
@@ -15,6 +15,21 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Kafka官网翻译——设计(上)</title>
+    <link href="https://rabbit-mar.github.io/2021/02/25/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1(%E4%B8%8A)/"/>
+    <id>https://rabbit-mar.github.io/2021/02/25/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1(%E4%B8%8A)/</id>
+    <published>2021-02-25T09:23:26.000Z</published>
+    <updated>2021-02-25T09:24:10.780Z</updated>
+    
+    
+    <summary type="html">描述</summary>
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>设计模式——单例模式</title>
@@ -347,23 +362,6 @@
     
     
     <summary type="html">NGINX详解的第六章——使用keepalived配置NGINX的高可用</summary>
-    
-    
-    
-    
-    <category term="Nginx" scheme="https://rabbit-mar.github.io/tags/Nginx/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>NGINX详解五：缓存</title>
-    <link href="https://rabbit-mar.github.io/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E4%BA%94%EF%BC%9A%E7%BC%93%E5%AD%98/"/>
-    <id>https://rabbit-mar.github.io/2020/11/06/NGINX%E8%AF%A6%E8%A7%A3%E4%BA%94%EF%BC%9A%E7%BC%93%E5%AD%98/</id>
-    <published>2020-11-05T21:58:56.000Z</published>
-    <updated>2021-02-18T14:52:49.806Z</updated>
-    
-    
-    <summary type="html">NGINX详解第五章——NGINX中的缓存</summary>
     
     
     

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Kafka官网翻译——设计(上) | Marveal Rabbit - Coder&#39;s Blog</title>
+  <meta name="description" content="描述">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka官网翻译——设计(上)">
+<meta property="og:url" content="https://rabbit-mar.github.io/2021/02/25/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1(%E4%B8%8A)/index.html">
+<meta property="og:site_name" content="Marveal Rabbit">
+<meta property="og:description" content="描述">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://picsum.photos/1080/400">
+<meta property="article:published_time" content="2021-02-25T09:23:26.000Z">
+<meta property="article:modified_time" content="2021-02-25T09:24:10.780Z">
+<meta property="article:author" content="Marveal Rabbit">
+<meta property="article:tag" content="marveal,Marveal Rabbit,rabbit-mar,mar-rab,MR,marvr,blog,个人博客,博客网站">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://picsum.photos/1080/400">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://rabbit-mar.github.io/2021/02/25/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1(%E4%B8%8A)/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Marveal Rabbit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitment@0.0.3/style/default.min.css">
+  
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/Rabbit-Mar" target="_blank">
+          <img class="img-circle" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Marveal Rabbit</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Programming Lover &amp; Coder</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Hangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎来到Marveal Rabbit的个人博客网站</p> <br> <p>2021-02-19 从<a target="_blank" rel="noopener" href='http://marvr.top'>http://marvr.top</a>迁移至此</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ElasticSearch/" rel="tag">ElasticSearch</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gradle/" rel="tag">Gradle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/" rel="tag">JVM</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Kafka/" rel="tag">Kafka</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/" rel="tag">LeetCode</a><span class="tag-list-count">33</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nginx/" rel="tag">Nginx</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RabbitMQ/" rel="tag">RabbitMQ</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mycat/" rel="tag">mycat</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sharding-jdbc/" rel="tag">sharding-jdbc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">二月 2021</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">9</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">34</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+<div class="widget">
+  <h3 class="widget-title">最新文章</h3>
+  <div class="widget-body">
+    <ul class="recent-post-list list-unstyled no-thumbnail">
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2021/02/25/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1(%E4%B8%8A)/"
+              class="title">Kafka官网翻译——设计(上)</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2021-02-25T09:23:26.000Z" itemprop="datePublished">2021-02-25</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2021/02/24/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/"
+              class="title">设计模式——单例模式</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2021-02-24T08:17:16.000Z" itemprop="datePublished">2021-02-24</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2021/02/20/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94API/"
+              class="title">Kafka官网翻译——API</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2021-02-20T06:06:43.000Z" itemprop="datePublished">2021-02-20</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2021/02/19/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%B5%B7%E6%AD%A5/"
+              class="title">Kafka官网翻译——起步</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2021-02-19T03:18:08.000Z" itemprop="datePublished">2021-02-19</time>
+          </p>
+        </div>
+      </li>
+      
+      <li>
+        
+        <div class="item-inner">
+          <p class="item-title">
+            <a href="/2020/12/23/%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E4%B9%8Bsharding-jdbc&mycat/"
+              class="title">分库分表之sharding-jdbc&amp;mycat</a>
+          </p>
+          <p class="item-date">
+            <time datetime="2020-12-22T20:00:08.000Z" itemprop="datePublished">2020-12-23</time>
+          </p>
+        </div>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Kafka官网翻译——设计(上)" class="article article-type-post" itemscope
+    itemtype="http://schema.org/BlogPosting">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" target="_blank" href="https://picsum.photos/1080/400" rel="gallery_cklknu1n6005g8f024fhw40x6 noopener">
+        <img src="https://picsum.photos/1080/400" style="border-radius: 8px;" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    <div class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      Kafka官网翻译——设计(上)
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2021/02/25/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1(%E4%B8%8A)/" class="article-date">
+	  <time datetime="2021-02-25T09:23:26.000Z" itemprop="datePublished">2021年02月25日17时</time>
+	</a>
+</span>
+        
+
+        
+	<span class="article-read hidden-xs">
+	    <i class="icon icon-eye-fill" aria-hidden="true"></i>
+	    <span id="busuanzi_container_page_pv">
+			<span id="busuanzi_value_page_pv">0</span>
+		</span>
+	</span>
+
+        
+
+<span class="post-wordcount hidden-xs" itemprop="wordCount"><i
+		class="icon icon-search"></i>&nbsp;字数统计:
+	6.1k(字)</span>
+
+
+<span class="post-readcount hidden-xs" itemprop="timeRequired"><i
+		class="icon icon-clock"></i>&nbsp;阅读时长:
+	21(分)</span>
+
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021/02/25/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1(%E4%B8%8A)/#comments"
+            class="article-comment-link">评论</a></span>
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+      <h1 id="设计"><a href="#设计" class="headerlink" title="设计"></a>设计</h1><h2 id="4-1-动机"><a href="#4-1-动机" class="headerlink" title="4.1 动机"></a>4.1 动机</h2><p>我们设计Kafka使其能够作为一个统一的平台，来处理大型公司可能拥有的所有实时数据来源。为此，我们必须考虑一组相当广泛的用例。</p>
+<p>它必须具有高吞吐量才能支持大量事件流，例如实时日志聚合。</p>
+<p>它将需要优雅处理大量数据积压，以支持从脱机系统定期加载数据。</p>
+<p>这也意味着系统将不得不处理低延迟的传递，以处理更多传统的消息传递用例。</p>
+<p>我们希望支持对这些提要进行分区，分布式，实时处理，以创建新的派生提要。这激发了我们的分区和消费者模型。</p>
+<p>最终，在将流发送到其他数据系统中进行服务的情况下，我们需要保证该系统必须能够在存在机器故障情况下的容错能力。</p>
+<p>支持这些用途使我们进行了包含许多独特元素的设计，与传统的消息系统相比，该元素更类似于数据库日志。在以下各节中，我们将概述设计的某些元素。</p>
+<h2 id="4-2-持久化"><a href="#4-2-持久化" class="headerlink" title="4.2 持久化"></a>4.2 持久化</h2><h3 id="不要害怕文件系统！"><a href="#不要害怕文件系统！" class="headerlink" title="不要害怕文件系统！"></a>不要害怕文件系统！</h3><p>Kafka在很大程度上依赖于文件系统来存储和缓存消息。人们普遍认为“磁盘速度很慢”，这使人们怀疑持久性架构能否提供有竞争力的性能。实际上，磁盘速度和人们期望的速度相比，更快或者更慢都取决于他们的使用。正确设计的磁盘架构通常可以和网络一样快。</p>
+<p>有关磁盘性能的关键事实是，过去十年来，硬盘驱动器的吞吐量与磁盘寻道的等待时间有所不同。 结果，在具有六个7200rpm SATA RAID-5阵列的JBOD配置上，线性写入的性能约为600MB / sec，但是随机写入的性能仅为约100k / sec，相差超过6000倍。 这些线性读取和写入是所有使用模式中最可预测的，并且已由操作系统进行了大幅优化。 现代操作系统提供了预读和后写技术，这些技术可以以大块倍数预取数据，并将较小的逻辑写入分组为大型物理写入。 有关此问题的进一步讨论，请参见<a target="_blank" rel="noopener" href="http://queue.acm.org/detail.cfm?id=1563874">ACM队列文章</a>。 他们实际上发现，在某些情况下，顺序磁盘访问比随机存储器访问要快！</p>
+<p><img src="https://deliveryimages.acm.org/10.1145/1570000/1563874/jacobs3.jpg"></p>
+<p>为了弥补这种性能差异，现代操作系统在使用主内存进行磁盘缓存方面变得越来越积极。 当回收内存时，现代的操作系统会很乐意将所有可用内存转移到磁盘缓存中，并且对性能的影响很小。 所有磁盘读写都将通过此统一缓存。 如果不使用direct IO，就无法轻易关闭此功能，因此，即使进程维护了数据在进程内高速的缓存，此数据也很可能在OS的pagecache中被复制，将所有数据有效的存储两次。</p>
+<p>此外，我们是在JVM之上构建的，花了时间使用Java内存的人都知道两件事：</p>
+<ol>
+<li>对象的内存开销非常高，通常使存储数据大小增加一倍（或更大）。</li>
+<li>随着堆内数据的增加，Java垃圾收集变得越来越轻而慢。</li>
+</ol>
+<p>由于这些因素，使用文件系统和依靠pagecache优于维护内存级缓存或其他架构，通过自动访问所有未使用的内存，我们至少使可用内存增加了一倍，通过存储压缩的字节结构，有可能再增加一倍而不是单个对象。这样做使得在32GB的计算机上可获取最多28-30GB的缓存，并且不会造成GC损失。此外，即使重新启动服务也将保持热缓存，而进程内高速缓存将需要在内存中重建（对于10GB的缓存可能需要10分钟），否则它将需要从冷缓存开始（意味着可能有糟糕的的初始性能）。这也大大简化了代码，因为所有用于维持缓存和文件系统之间一致性的逻辑现在都在OS中，这比一次性读入到进程更有效，更正确。如果您的磁盘支持线性读取，那么预读将在每次读取的磁盘上有效地预先填充有用的数据。</p>
+<p>这表明设计非常简单：当空间不足时，不要在内存中维护过多的内存，并且把它全部刷新到文件系统中。而是将其反转。 所有数据都会立即写入文件系统上的持久日志中，而不必刷新到磁盘。 实际上，意味着将数据只传输到内核的pagecache中。</p>
+<p>这种以页面缓存为中心的设计风格在此处有关Varnish设计的<a target="_blank" rel="noopener" href="http://varnish-cache.org/wiki/ArchitectNotes">文章</a>中进行了描述（以及一些自大的技巧）。</p>
+<h3 id="常量时间-O-1-足够了"><a href="#常量时间-O-1-足够了" class="headerlink" title="常量时间( O (1) )足够了"></a>常量时间( O (1) )足够了</h3><p>消息系统中使用的持久性数据结构通常是每个消费者队列，具有关联的BTree或其他通用的随机访问数据结构，来维护有关消息的元数据。 BTree是最通用的数据结构，可以在消息系统中支持各种事务性和非事务性语义。但是，它们的代价确实很高：Btree操作为O(log N)。通常认为O(log N)本质上等同于恒定时间，但是对于磁盘操作而言并非如此。一次磁盘搜寻的发生时间为10毫秒，每个磁盘一次只能执行一次搜寻，因此并行性受到限制。因此，即使很少的磁盘搜寻也会导致非常高的开销。由于存储系统将非常快的缓存操作与非常慢的物理磁盘操作混合在一起，因此随着固定缓存的数据增加，观察到的树结构的性能通常是超线性的。将数据加倍会使事情变得比速度慢两倍还要更糟。</p>
+<p>直观上讲，持久性队列可以建立在简单的读取上并附加到文件上，这与日志记录解决方案通常是一样的。 这种结构的优点是所有操作均为O(1)，读取不会阻塞写入或彼此阻塞。由于性能与数据大小完全脱钩，因此具有明显的性能优势。一台服务器现在可以充分利用许多便宜的低转速1+ TB SATA驱动器。 尽管它们的寻道性能较差，但这些驱动器有可接受的大容量读写性能，而且价格只有1/3，容量为3倍。</p>
+<p>可以访问几乎无限的磁盘空间而不会降低性能，这意味着我们可以提供消息传递系统中通常不具备的某些功能。 例如，在Kafka中，我们可以尝试将消息保留相对较长的时间（例如一周），而不是尝试在消息被使用后立即删除。 正如我们将要描述的那样，这为消费者带来了很大的灵活性。</p>
+<h2 id="4-3-效率"><a href="#4-3-效率" class="headerlink" title="4.3 效率"></a>4.3 效率</h2><p>我们为提高效率付出了巨大的努力。我们的主要用例之一是处理网络活动数据，该数据量非常大：每个页面视图可能会产生数十次写入。此外，我们假设发布的每条消息都至少由一个消费者（通常是许多消费者）读取，因此我们努力使消费尽可能开销小。</p>
+<p>我们还从建立和运行许多类似系统的经验中发现，效率是有效的多租户操作的关键。 如果下游基础设施服务由于应用程序使用量的小幅度增加而容易成为瓶颈，那么这种小的更改通常会产生问题。 我们帮助确保应用程序在有负载的情况下先于基础架构进行快速过渡。当尝试运行支持集中式群集上数十个或数百个应用程序的集中式服务时，这尤其重要，因为使用模式的变化几乎每天都会发生。</p>
+<p>我们在上一节中讨论了磁盘效率。 一旦消除了不良的磁盘访问模式，这种系统效率低下的常见原因有两个：过多的小IO操作和过多的字节复制。</p>
+<p>小IO问题在客户端和服务器之间以及服务器自身的持久性操作中均会发生。</p>
+<p>为避免这种情况，我们的协议围绕“消息集”抽象构建，该抽象将消息自然地组合在一起。这允许网络请求将消息组合在一起并分摊网络往返的开销，而不是一次发送单个消息。服务器又将消息块一次性添加到其日志中，而消费者则一次性获取大型线性消息块。</p>
+<p>这种简单的优化可以增加数量级的速度。批处理导致更大的网络数据包，更大的顺序磁盘操作，连续的内存块等，所有这些都使Kafka可以将突发的随机消息写入流转换为线性写入流，这些写入流将流向消费者。</p>
+<p>另一个低效率是字节复制。在低消息速率下，这不是问题，但是在负载下影响很大。 为避免这种情况，我们采用了标准的二进制消息格式，该格式由生产者，borker和消费者共享（因此，数据块可以在它们之间进行传递而无需修改）。</p>
+<p>Broker维护的消息日志本身只是文件目录，每个文件目录都由一系列消息集填充，这些消息集以生产者和消费者使用的相同格式写入磁盘。保持这种通用格式可以优化最重要的操作：持久日志块的网络传输。现代的UNIX操作系统提供了高度优化的代码路径，用于将数据从pagecache传输到socket。 在Linux中，这是通过<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/sendfile.2.html">sendfile系统调用</a>完成的。</p>
+<p>要了解sendfile的影响，重要的是了解将数据从文件传输到socket的通用数据路径：</p>
+<ol>
+<li>操作系统将数据从磁盘读取到内核空间中的pagecache中</li>
+<li>应用程序将数据从内核空间读取到用户空间缓冲区中</li>
+<li>应用程序将数据写回到内核空间的socket缓冲区中</li>
+<li>操作系统将数据从socket缓冲区复制到通过网络发送的NIC缓冲区</li>
+</ol>
+<p><img src="/images/2021/02/22/F38E1E14-8B56-4A5D-9571-4475F821CFCE.png" alt="Traditional data copying approach"></p>
+<blockquote>
+<p>摘自：<a target="_blank" rel="noopener" href="https://developer.ibm.com/developer/default/articles/j-zerocopy/images/figure1.gif">https://developer.ibm.com/developer/default/articles/j-zerocopy/images/figure1.gif</a></p>
+</blockquote>
+<p><img src="/images/2021/02/22/E2C968E1-7EE5-42F1-95D9-82A9BADD4414.png?lastModify=1613966334" alt="Traditional context switches"></p>
+<blockquote>
+<p>摘自：<a target="_blank" rel="noopener" href="https://developer.ibm.com/developer/default/articles/j-zerocopy/images/figure2.gif">https://developer.ibm.com/developer/default/articles/j-zerocopy/images/figure2.gif</a></p>
+</blockquote>
+<p>这显然是低效的，有四个副本和两个系统调用。使用sendfile，可以通过允许OS将数据从pagecache直接发送到网络来避免这种重新复制。 因此，在此优化路径中，仅需要最终复制到NIC缓冲区。</p>
+<p>我们希望一个常见的用例是某个topic的多个消费者。使用上述零拷贝优化，数据将被复制到pagecache中一次，并在每次消费时重复使用，而不是存储在内存中，并在每次读取时复制到用户空间。这允许以接近网络连接限制的速率使用消息。</p>
+<p>pagecache和sendfile的这种组合意味着，在大量消费者挂载的Kafka集群上，您将看不到磁盘上的任何读取活动，因为它们将完全从缓存中提供数据。</p>
+<p>有关Java中sendfile和零拷贝支持的更多背景信息，请参阅<a target="_blank" rel="noopener" href="https://developer.ibm.com/articles/j-zerocopy/">本文</a>。</p>
+<h3 id="端到端批量压缩"><a href="#端到端批量压缩" class="headerlink" title="端到端批量压缩"></a>端到端批量压缩</h3><p>在某些情况下，瓶颈实际上不是CPU或磁盘，而是网络带宽，尤其是对于需要通过广域网在数据中心之间发送消息的数据管道。当然，用户总是可以一次压缩其消息，而无需Kafka的任何支持，但这可能导致非常糟糕的压缩率，因为大量冗余是由于相同类型消息之间的重复（例如， Web日志中的JSON或用户代理或通用字符串值）。有效压缩需要将多个消息压缩在一起，而不是分别压缩每个消息。</p>
+<p>Kafka以有效的批处理格式支持此操作。可以将一批消息压缩在一起，然后以这种形式发送到服务器。这批消息将以压缩形式写入，并保持压缩在日志中，并且仅由消费者解压缩。</p>
+<p>Kafka支持GZIP，Snappy，LZ4和ZStandard压缩协议。有关压缩的更多详细信息，请参见<a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/KAFKA/Compression">此处</a>。</p>
+<h2 id="4-4-生产者"><a href="#4-4-生产者" class="headerlink" title="4.4 生产者"></a>4.4 生产者</h2><h3 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h3><p>生产者直接将数据发送到分区leader的broker上，不需要中间路由层。为了帮助生产者做到这一点，所有Kafka节点都可以在任何给定时间回答关于元数据的请求，这些数据关于哪些服务器处于活动状态以及topic分区的leader在哪里，帮助生产者确定它的请求发送到哪里去。</p>
+<p>客户端控制将消息发布到哪个分区。这可以随机执行，实现一种随机的负载均衡，也可以通过某些语义分区来完成。通过用户指定的键来进行分区并使用其散列到分区，我们公开了用于语义分区的接口（如果需要有一个选项可以重写分区函数）。例如，如果选择的键是用户ID，则给定用户的所有数据将发送到同一分区。如果没有这种语义上的分区，在本地的消费者就要对他们的消费进行猜测。这种明确分区的设计，可以在本地的消费者端处理敏感数据。</p>
+<h3 id="异步发送"><a href="#异步发送" class="headerlink" title="异步发送"></a>异步发送</h3><p>批处理是提高效率的主要方式之一，而要启用批处理，Kafka生产者将尝试在内存中累积数据并在单个请求中发出更大的批处理。 批处理可以配置为累积不超过固定数量的消息，并且等待不超过某个固定等待时间限制（例如64k或10 ms）。这可以累积更多的字节来发送，并且服务器上很少进行较大的IO操作。这种增加少量额外的延迟以提高吞吐量的机制是可以权衡的。</p>
+<p>有关配置和生产者的<a target="_blank" rel="noopener" href="http://kafka.apache.org/082/javadoc/index.html?org/apache/kafka/clients/producer/KafkaProducer.html">api</a>的详细信息，可以在文档的其他地方找到。</p>
+<h2 id="4-5-消费者"><a href="#4-5-消费者" class="headerlink" title="4.5 消费者"></a>4.5 消费者</h2><p>Kafka消费者通过向broker发出“fetch”请求来工作，leader会引导到消费者想要消费的分区上。每个请求消费者指定他在日志文件中的偏移，接收从偏移量开始的一块日志，并从该位置开始接收回日志的一部分。 消费者因此对偏移量具有重要的控制权，并且可以根据需要倒带以重新消费数据。</p>
+<h3 id="push-vs-pull"><a href="#push-vs-pull" class="headerlink" title="push vs pull"></a>push vs pull</h3><p>我们考虑的第一个问题是，消费者应该从broker那里拉数据，还是broker应该将数据推送给消费者。在这方面，Kafka遵循了一种更为传统的设计，大多数消息系统都采用这种设计，在这种设计中，数据从生产者推送到broker，消费者从broker拉。某些以日志记录为中心的系统（例如Scribe和Apache Flume）遵循完全不同的基于推送的方式，将数据推送到下游。两种方法都各有利弊。但是，基于推送的系统很难与多样化的消费者打交道，因为broker控制着数据的传输速率。通常，目标是使消费者能够以尽可能最大的速度消费。不幸的是，在推式系统中，这意味着当消费者的消费速度低于生产速度时，消费者往往处理不过来（本质上是拒绝服务攻击）。基于拉的系统具有更好的特性，即消费者稍微落后在可能的情况下可以追赶上来。可以通过某种退避协议来缓解这种情况，消费者可以通过这种退避协议来表明它已不堪重负，但是要想完全利用（但绝不过度利用）消费者的传输速率要困难得多。根据先前以这种方式构建的系统的经验，我们选择了更传统的拉模式。</p>
+<p>基于拉模式的另一个优点是，它有助于对发送给消费者的数据进行批处理。 基于推模式必须选择立即发送请求或累积更多数据，稍后在不知道下游消费者是否能够立即处理请求的情况下发送。 如果针对低延迟做了调整，这会导致每次仅发送一条消息，并且数据无论如何传输最终都会被缓冲，这样十分浪费性能。 基于拉模式设计就可以解决这个问题，因为消费者始终将会把所有可用消息拉取到在日志中的当前位置之后（或配置的最大size）。 这样一来，您可以在不获得最佳的批处理性能（没有引入非必要的延迟情况下）。</p>
+<p>原生拉模式的不足之处在于，如果broker没有数据，则消费者可能最终会在不断的循环中进行轮询，忙于等待数据到达。 为了避免这种情况，我们在拉取的请求中添加了一些参数，这些参数允许消费者请求阻塞在“长时间轮询”中，直到数据到达为止（也可以选择持续等待，直到有一定量等待被消费的数据，这样是为了确保有较大的传输数据量）。</p>
+<p>你可能到想象其他的设计针对端到端的拉取。生产者可以在本地写入本地日志，broker从本地日志中拉取，而消费者则从他们那里拉取日志。经常提出一种类似于“存储转发”的生产者。 但是我们觉得它不适合我们的目标用例，因为有成千上万的生产者。 我们在大规模运行持久性数据系统的经验让我们觉得，涉及许多应用程序的系统中，如果有成千上万个磁盘实际上会使系统变得不可靠，并且操作起来十分困难。 在实践中，我们发现我们可以大规模运行具有强大SLA的管道，不需要生产者的持久性。</p>
+<h3 id="消费者的定位"><a href="#消费者的定位" class="headerlink" title="消费者的定位"></a>消费者的定位</h3><p>令人惊讶的是，跟踪已消耗的内容是消息系统的关键性能点之一。<br>大多数消息系统保留了在broker上消耗了哪些消息的元数据。即，当消息发送给消费者时，broker要么立即在本地记录，要么等待消费者的确认后记录。 这是一个相当直观的选择，实际上对于单台机器服务器，性能如何都不清楚。 由于许多消息系统中用于存储的数据结构扩展性很差，因此这也是一个务实的选择，因为broker知道被消费的内容，因此可以立即删除它，使数据量变小。</p>
+<p>可能不注意，使broker和消费者就消费了哪些消息的事情，达成协议并不是一个小问题。如果broker每次在发出网络请求后立马记录消息被消费，那么如果消费者没有消费该消息（例如，网络崩溃或请求超时或其他原因），该消息就丢失了。为了解决这个问题，许多消息系统都添加了确认机制，这意味着消息仅被标记为已发送，发送时不被消费。broker等待消费者的特定确认后，再记录消息的消费情况。这个策略解决了丢失消息的问题，但会带来新的问题。首先，如果消费者消费了该消息但在发送确认之前失败，则该消息将被消费两次。第二个问题是性能，现在的broker必须对每个消息保持多个状态（首先将其锁定，这样就不会再次发出该消息，然后将其标记为永久使用，以便可以将其删除）。必须处理棘手的问题，例如如何处理已发送但从未确认的消息。</p>
+<p>Kakfa对这个问题的处理方式有所不同。我们的topic分为一组完全有序的分区，每个分区在给定的时间正好由每个订阅用户组中的一个用户消费。这意味着消费者在每个分区中的位置只是一个整数，即下一个要使用的消息的偏移量。 这样使消费的状态很小，每个分区只有一个数字。可以定期检查该状态。这等同于消息确认的开销很小。</p>
+<p>这个处理方式有一个附带好处。 消费者可以有意地倒回到旧的偏移量并重新消费数据。这违反了队列的通用约定，但事实证明这是许多消费者的基本功能。例如，如果消费者代码中有bug，并且发现某些消息被消费了，则消费者可以在错误修复后重新消费这些消息。</p>
+<h3 id="离线数据堆积"><a href="#离线数据堆积" class="headerlink" title="离线数据堆积"></a>离线数据堆积</h3><p>可扩展的持久性可以让消费者定期消费例如批量数据加载，定期批量加载数据到一个离线系统中，诸如Hadoop或关系数据仓库。<br>在Hadoop的情况下，我们通过将加载划分为独立的map任务来并行加载数据，每个节点/主题/分区进行组合，从而实现了完全并行加载。Hadoop提供了任务管理，失败的任务可以重新启动而没有重复数据的危险，它们只是从原始位置重新启动。</p>
+<h3 id="静态成员"><a href="#静态成员" class="headerlink" title="静态成员"></a>静态成员</h3><p>静态成员旨在提高流应用程序，消费者组和其他基于Group Rebalance协议构建的应用程序的可用性。Rebalance协议依赖于组Coordinator将实体ID分配给组成员。这些生成的ID是短暂的，在成员重新启动并重新加入时会更改。对于基于消费者的应用程序，这种“动态成员身份”可以导致在管理操作（例如代码部署，配置更新和定期重新启动）期间将很大一部分任务重新分配给不同的实例。对于大型状态应用程序，经过重排的任务需要很长时间才能恢复其本地状态之后才能处理，并且会导致应用程序部分或全部不可用。 经过这个结果的启发，Kafka的组管理协议允许组成员提供持久的实体ID。 根据这些ID，组成员身份保持不变，因此不会触发Rebalance。</p>
+<p>如果你想使用静态成员：</p>
+<ul>
+<li>更新broker集群和客户端app到2.3+，并且同时保证更新的broker使用<code>inter.broker.protocol.version</code>2.3+</li>
+<li>在同一个组内，为每一个消费者实例设置<code>ConsumerConfig#GROUP_INSTANCE_ID_CONFIG</code>为唯一的值</li>
+<li>对于Kafka Streams应用程序，为每个Kafka Streams实例设置一个唯一的<code>ConsumerConfig#GROUP_INSTANCE_ID_CONFIG</code>就足够了，与实例使用的线程数无关。</li>
+</ul>
+<p>如果broker的版本低于2.3，但您仍然选择在客户端上设置<code>ConsumerConfig#GROUP_INSTANCE_ID_CONFIG</code>，则应用程序将检测broker版本，然后引发UnsupportedException。 如果您不小心为不同实例配置重复ID，则broker端的防护机制将通过触发<code>org.apache.kafka.common.errors.FencedInstanceIdException</code>通知您的重复客户端立即关闭。 有关更多详细信息，请参见<a target="_blank" rel="noopener" href="https://cwiki.apache.org/confluence/display/KAFKA/KIP-345%3A+Introduce+static+membership+protocol+to+reduce+consumer+rebalances">KIP-345</a></p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://rabbit-mar.github.io/2021/02/25/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1(%E4%B8%8A)/" title="Kafka官网翻译——设计(上)" target="_blank" rel="external">https://rabbit-mar.github.io/2021/02/25/Kafka%E5%AE%98%E7%BD%91%E7%BF%BB%E8%AF%91%E2%80%94%E2%80%94%E8%AE%BE%E8%AE%A1(%E4%B8%8A)/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/Rabbit-Mar" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/Rabbit-Mar" target="_blank"><span class="text-dark">Marveal Rabbit</span><small class="ml-1x">Programming Lover &amp; Coder</small></a></h3>
+        <div>热爱学习，探索新事物，对技术抱有追求；热爱挑战，不惧困难，精致人生；</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+  
+  <section id="comments">
+  	
+    
+  </section>
+
+
+  
+</div>
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/Rabbit-Mar" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://gitee.com/marveal_admin" target="_blank" title="Gitee" data-toggle=tooltip data-placement=top><i class="icon icon-gitee"></i></a></li>
+        
+        <li><a href="https://blog.csdn.net/weixin_43260474" target="_blank" title="Code" data-toggle=tooltip data-placement=top><i class="icon icon-code"></i></a></li>
+        
+        <li><a href="/atom.xml" target="_blank" title="Rss" data-toggle=tooltip data-placement=top><i class="icon icon-rss"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                TAGS: '标签',
+                UNTITLED: '(未命名)',
+            },
+            ROOT_URL: '/',
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+   
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+   
+    
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+  var gitment = new Gitment({
+    id: 'Kafka官网翻译——设计(上)',
+    owner: 'Rabbit-Mar', // 可以是你的GitHub用户名，也可以是github id
+    repo: 'rabbit-mar.github.io',
+    oauth: {
+      client_id: 'a05c4d867ec26c0a59d2',
+      client_secret: '0bdcf90d06734d19c37969511ddc20e0835dbd0a',
+    }
+  })
+  gitment.render('comments')
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>
